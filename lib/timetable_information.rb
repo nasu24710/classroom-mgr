@@ -1,7 +1,7 @@
 require 'date'
 
-class TimetableInformation < Data.define(:subject, :term, :day_of_the_week, :periods, :user, :room_name)
-    def initialize(subject:, term:, day_of_the_week:, periods:, user:, room_name:)
+class TimetableInformation < Data.define(:subject, :term, :day_of_the_week, :periods, :user, :room_names)
+    def initialize(subject:, term:, day_of_the_week:, periods:, user:, room_names:)
         unless subject.is_a?(String)
             raise ArgumentError, "subject must be a String"
         end
@@ -17,10 +17,10 @@ class TimetableInformation < Data.define(:subject, :term, :day_of_the_week, :per
         unless user.is_a?(String)
             raise ArgumentError, "user must be a String"
         end
-        unless room_name.is_a?(String)
-            raise ArgumentError, "room_name must be a String"
+        unless room_names.is_a?(Array) && room_names.all? { |r| r.is_a?(String) }
+            raise ArgumentError, "room_names must be an Array of Strings"
         end
 
-        super(subject: subject, term: term, day_of_the_week: day_of_the_week, periods: periods, user: user, room_name: room_name)
+        super(subject: subject, term: term, day_of_the_week: day_of_the_week, periods: periods, user: user, room_names: room_names)
     end
 end

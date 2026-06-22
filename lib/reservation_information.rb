@@ -1,7 +1,7 @@
 require 'date'
 
-class ReservationInformation < Data.define(:date, :subject, :periods, :user, :room_name)
-    def initialize(date:, subject:, periods:, user:, room_name:)
+class ReservationInformation < Data.define(:date, :subject, :periods, :user, :room_names)
+    def initialize(date:, subject:, periods:, user:, room_names:)
         unless date.is_a?(Date)
             raise ArgumentError, "date must be a Date object"
         end
@@ -14,10 +14,10 @@ class ReservationInformation < Data.define(:date, :subject, :periods, :user, :ro
         unless user.is_a?(String)
             raise ArgumentError, "user must be a String"
         end
-        unless room_name.is_a?(String)
-            raise ArgumentError, "room_name must be a String"
+        unless room_names.is_a?(Array) && room_names.all? { |r| r.is_a?(String) }
+            raise ArgumentError, "room_names must be an Array of Strings"
         end
 
-        super(date: date, subject: subject, periods: periods, user: user, room_name: room_name)
+        super(date: date, subject: subject, periods: periods, user: user, room_names: room_names)
     end
 end
