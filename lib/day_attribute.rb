@@ -1,6 +1,6 @@
 require 'date'
 
-class DayAttribute < Data.define(:day_of_the_week_changes: nil, :is_makeup_class, :is_exam_period, :is_public_holiday, :is_holiday, :comments)
+class DayAttribute < Data.define(:day_of_the_week_changes, :is_makeup_class, :is_exam_period, :is_public_holiday, :is_holiday, :comments)
     def initialize(day_of_the_week_changes:, is_makeup_class:, is_exam_period:, is_public_holiday:, is_holiday:, comments:)
         unless day_of_the_week_changes.is_a?(Symbol) || day_of_the_week_changes.nil?
             raise ArgumentError, "day_of_the_week_changes must be a Symbol or nil"
