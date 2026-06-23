@@ -6,3 +6,4 @@ class ManagedLectureRoomInformation
     
     @room_name = room_name
   end
+  

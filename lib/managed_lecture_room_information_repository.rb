@@ -10,7 +10,6 @@ class ManagedLectureRoomInformationRepository
   end
   
   def replace_all(managed_lecture_room_informations)
-    
     unless managed_lecture_room_informations.all? {
       |information| information.is_a?(ManagedLectureRoomInformation)
     }

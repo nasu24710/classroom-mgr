@@ -7,7 +7,6 @@ class ManagedLectureRoomParser
   end
 
   def parse_entry(target_row,target_column)
-
     unless target_row.is_a?(Integer)
       raise ArgumentError, 'row_number must be an Integer.'
     end
