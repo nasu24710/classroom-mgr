@@ -5,4 +5,4 @@ class ManagedLectureRoomInformation
     end 
     
     @room_name = room_name
-  end
+  end #class ManagedLectureRoomInformation

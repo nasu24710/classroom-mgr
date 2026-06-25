@@ -22,4 +22,4 @@ class ManagedLectureRoomInformationRepository
   def find_all
     return @managed_lecture_room_informations.dup   
   end
-end
+end # class ManagedLectureRoomInformationRepository
