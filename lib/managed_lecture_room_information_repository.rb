@@ -11,24 +11,8 @@ class ManagedLectureRoomInformationRepository
         replace_all(managed_lecture_room_informations)
     end
 
-    def add(managed_lecture_room_information)
-        unless managed_lecture_room_information.is_a?(ManagedLectureRoomInformation)
-            raise ArgumentError, "managed_lecture_room_information must be an instance of ManagedLectureRoomInformation"
-        end
-
-        @managed_lecture_room_informations << managed_lecture_room_information
-    end
-
-    def remove(managed_lecture_room_information)
-        unless managed_lecture_room_information.is_a?(ManagedLectureRoomInformation)
-            raise ArgumentError, "managed_lecture_room_information must be an instance of ManagedLectureRoomInformation"
-        end
-
-        @managed_lecture_room_informations.delete(managed_lecture_room_information)
-    end
-
     def replace_all(managed_lecture_room_informations)
-        managed_lecture_room_informations.map do |info|
+        managed_lecture_room_informations.each do |info|
             unless info.is_a?(ManagedLectureRoomInformation)
                 raise ArgumentError, "All elements must be instances of ManagedLectureRoomInformation"
             end

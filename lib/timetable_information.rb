@@ -21,6 +21,6 @@ class TimetableInformation < Data.define(:subject, :term, :day_of_the_week, :per
             raise ArgumentError, "room_names must be an Array of Strings"
         end
 
-        super(subject: subject, term: term, day_of_the_week: day_of_the_week, periods: periods, user: user, room_names: room_names)
+        super(subject: subject, term: term, day_of_the_week: day_of_the_week, periods: periods.dup, user: user, room_names: room_names.dup)
     end
 end

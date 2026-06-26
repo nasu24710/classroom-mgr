@@ -27,7 +27,7 @@ class LectureRoomManagementInformation < Data.define(:date, :day_of_the_week, :t
             raise ArgumentError, "comment must be a String"
         end
 
-        super(date: date, day_of_the_week: day_of_the_week, term: term, periods: periods, room_name: room_name, subject: subject, user: user, comment: comment) 
+        super(date: date, day_of_the_week: day_of_the_week, term: term, periods: periods.dup, room_name: room_name, subject: subject, user: user, comment: comment) 
     end
 
     def conflicting_periods_with(lecture_room_management_information:)
@@ -35,8 +35,10 @@ class LectureRoomManagementInformation < Data.define(:date, :day_of_the_week, :t
             raise ArgumentError, "lecture_room_management_information must be an instance of LectureRoomManagementInformation"
         end
 
-        # Return the intersection of periods between self and the provided lecture_room_management_information
-        self.periods & lecture_room_management_information.periods
+        return [] unless date == lecture_room_management_information.date
+        return [] unless room_name == lecture_room_management_information.room_name
+
+        periods & lecture_room_management_information.periods
     end
 
 end

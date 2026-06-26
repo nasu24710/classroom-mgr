@@ -1,5 +1,5 @@
-require_relative '../lib/reservation_information'
-require 'minitest/autorun'
+require_relative '../test_helper'
+require_relative '../../lib/reservation_information'
 
 class ReservationInformationTest < Minitest::Test
     def setup
@@ -23,6 +23,21 @@ class ReservationInformationTest < Minitest::Test
         assert_equal @valid_periods, info.periods
         assert_equal @valid_user, info.user
         assert_equal @valid_room_names, info.room_names
+    end
+
+    def test_valid_empty_periods_and_room_names
+        info = ReservationInformation.new(
+            date: @valid_date,
+            subject: '',
+            periods: [],
+            user: '',
+            room_names: []
+        )
+
+        assert_equal '', info.subject
+        assert_equal [], info.periods
+        assert_equal '', info.user
+        assert_equal [], info.room_names
     end
 
     def test_invalid_date
@@ -80,9 +95,40 @@ class ReservationInformationTest < Minitest::Test
                 subject: @valid_subject,
                 periods: @valid_periods,
                 user: @valid_user,
-                room_namess: 123
+                room_names: 123
             )
         end
+    end
+
+    def test_invalid_room_names_contents
+        assert_raises(ArgumentError) do
+            ReservationInformation.new(
+                date: @valid_date,
+                subject: @valid_subject,
+                periods: @valid_periods,
+                user: @valid_user,
+                room_names: ["Room A", 123]
+            )
+        end
+    end
+
+    def test_array_arguments_are_copied
+        periods = [:p1, :p2]
+        room_names = ['Room A']
+
+        info = ReservationInformation.new(
+            date: @valid_date,
+            subject: @valid_subject,
+            periods: periods,
+            user: @valid_user,
+            room_names: room_names
+        )
+
+        periods << :p3
+        room_names << 'Room B'
+
+        assert_equal [:p1, :p2], info.periods
+        assert_equal ['Room A'], info.room_names
     end
 end
 

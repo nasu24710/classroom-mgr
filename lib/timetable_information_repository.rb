@@ -11,24 +11,8 @@ class TimetableInformationRepository
         replace_all(timetable_informations)
     end
 
-    def add(timetable_information)
-        unless timetable_information.is_a?(TimetableInformation)
-            raise ArgumentError, "timetable_information must be an instance of TimetableInformation"
-        end
-
-        @timetable_informations << timetable_information
-    end
-
-    def remove(timetable_information)
-        unless timetable_information.is_a?(TimetableInformation)
-            raise ArgumentError, "timetable_information must be an instance of TimetableInformation"
-        end
-
-        @timetable_informations.delete(timetable_information)
-    end
-
     def replace_all(timetable_informations)
-        timetable_informations.map do |info|
+        timetable_informations.each do |info|
             unless info.is_a?(TimetableInformation)
                 raise ArgumentError, "All elements must be instances of TimetableInformation"
             end

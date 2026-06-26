@@ -35,7 +35,11 @@ class AcademicCalendarInformationRepository
         end
 
         @academic_calendar_informations.select do |info|
-            info.day_of_the_week == day_of_the_week
+            if info.day_attribute.day_of_the_week_changes.nil?
+                info.day_of_the_week == day_of_the_week
+            else
+                info.day_attribute.day_of_the_week_changes == day_of_the_week
+            end
         end
     end
 end

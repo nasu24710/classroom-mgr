@@ -21,6 +21,6 @@ class DayAttribute < Data.define(:day_of_the_week_changes, :is_makeup_class, :is
             raise ArgumentError, "comments must be an Array of Strings or nil"
         end
 
-        super(day_of_the_week_changes: day_of_the_week_changes, is_makeup_class: is_makeup_class, is_exam_period: is_exam_period, is_public_holiday: is_public_holiday, is_holiday: is_holiday, comments: comments)
+        super(day_of_the_week_changes: day_of_the_week_changes, is_makeup_class: is_makeup_class, is_exam_period: is_exam_period, is_public_holiday: is_public_holiday, is_holiday: is_holiday, comments: comments&.dup)
     end
 end

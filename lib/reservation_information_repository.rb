@@ -11,24 +11,8 @@ class ReservationInformationRepository
         replace_all(reservation_informations)
     end
 
-    def add(reservation_information)
-        unless reservation_information.is_a?(ReservationInformation)
-            raise ArgumentError, "reservation_information must be an instance of ReservationInformation"
-        end
-
-        @reservation_informations << reservation_information
-    end
-
-    def remove(reservation_information)
-        unless reservation_information.is_a?(ReservationInformation)
-            raise ArgumentError, "reservation_information must be an instance of ReservationInformation"
-        end
-
-        @reservation_informations.delete(reservation_information)
-    end
-
     def replace_all(reservation_informations)
-        reservation_informations.map do |info|
+        reservation_informations.each do |info|
             unless info.is_a?(ReservationInformation)
                 raise ArgumentError, "All elements must be instances of ReservationInformation"
             end

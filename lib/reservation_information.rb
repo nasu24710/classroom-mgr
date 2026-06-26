@@ -18,6 +18,6 @@ class ReservationInformation < Data.define(:date, :subject, :periods, :user, :ro
             raise ArgumentError, "room_names must be an Array of Strings"
         end
 
-        super(date: date, subject: subject, periods: periods, user: user, room_names: room_names)
+        super(date: date, subject: subject, periods: periods.dup, user: user, room_names: room_names.dup)
     end
 end

@@ -50,7 +50,7 @@ class LectureRoomManagementInformationRepository
         end
         
         @lecture_room_management_informations.select do |info|
-            info.date == date && info.lecture_room_name == lecture_room_name
+            info.date == date && info.room_name == lecture_room_name
         end
     end
 end
