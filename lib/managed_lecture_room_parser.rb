@@ -1,3 +1,5 @@
+require_relative 'managed_lecture_room_information'
+
 class ManagedLectureRoomParser
   def initialize(worksheet)
     unless worksheet.is_a?(RubyXL::Worksheet)
@@ -30,7 +32,7 @@ class ManagedLectureRoomParser
       return nil
     end
 
-    return lecture_room_name
+    return ManagedLectureRoomInformation.new(lecture_room_name)
   end
 
   def parse_managed_lecture_room_worksheet
