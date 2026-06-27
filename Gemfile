@@ -5,3 +5,4 @@ source "https://rubygems.org"
 # gem "rails"
 
 gem "rubyXL"
+gem "unicode-display_width"

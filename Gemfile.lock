@@ -10,6 +10,9 @@ GEM
       nokogiri (>= 1.10.8)
       rubyzip (>= 3.2.2)
     rubyzip (3.4.0)
+    unicode-display_width (3.2.0)
+      unicode-emoji (~> 4.1)
+    unicode-emoji (4.2.0)
 
 PLATFORMS
   arm64-darwin-25
@@ -17,6 +20,7 @@ PLATFORMS
 
 DEPENDENCIES
   rubyXL
+  unicode-display_width
 
 BUNDLED WITH
    2.4.19
