@@ -100,7 +100,7 @@ class InteractiveMenuTest < Minitest::Test
       menu = InteractiveMenu.new
     end
 
-    assert_raises(ArgumentError) do
+    assert_raises(TypeError) do
       menu.ask_yes_or_no(123)
     end
   end
@@ -141,15 +141,15 @@ class InteractiveMenuTest < Minitest::Test
       menu = InteractiveMenu.new
     end
 
-    assert_raises(ArgumentError) do
+    assert_raises(TypeError) do
       menu.select_from_list(123, ['Alpha'])
     end
 
-    assert_raises(ArgumentError) do
+    assert_raises(TypeError) do
       menu.select_from_list('Choose one', 'not an array')
     end
 
-    assert_raises(ArgumentError) do
+    assert_raises(TypeError) do
       menu.select_from_list('Choose one', [1, 2])
     end
   end
