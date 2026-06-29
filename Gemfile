@@ -5,3 +5,5 @@ source "https://rubygems.org"
 # gem "rails"
 
 gem "rubyXL"
+gem "tty-prompt"
+gem "minitest"
