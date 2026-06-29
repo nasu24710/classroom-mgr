@@ -15,6 +15,6 @@ class ExcelDataExporter
 
     FileUtils.mkdir_p(OUTPUT_DIRECTORY)
 
-    workbook.write(File.join(OUTPUT_DIRECTORY, file_name))
+    workbook.write(File.join(OUTPUT_DIRECTORY, "#{file_name}.xlsx"))
   end
 end

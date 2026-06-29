@@ -4,8 +4,8 @@ require_relative '../lib/excel_data_exporter'
 class ExcelDataExporterTest < Minitest::Test
   def setup
     @exporter = ExcelDataExporter.new
-    @file_name = 'excel_data_exporter_test.xlsx'
-    @output_file_path = File.join(ExcelDataExporter::OUTPUT_DIRECTORY, @file_name)
+    @file_name = 'excel_data_exporter_test'
+    @output_file_path = File.join(ExcelDataExporter::OUTPUT_DIRECTORY, "#{@file_name}.xlsx")
   end
 
   def teardown
