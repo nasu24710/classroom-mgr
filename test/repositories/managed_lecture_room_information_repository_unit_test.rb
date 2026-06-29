@@ -46,4 +46,12 @@ class ManagedLectureRoomInformationRepositoryTest < Minitest::Test
 
         assert_equal [], repository.find_all
     end
+
+    def test_invalid_replace_all_argument
+        repository = ManagedLectureRoomInformationRepository.new
+
+        assert_raises(TypeError) do
+            repository.replace_all('not an array')
+        end
+    end
 end

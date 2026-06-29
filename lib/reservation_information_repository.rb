@@ -12,6 +12,10 @@ class ReservationInformationRepository
     end
 
     def replace_all(reservation_informations)
+        unless reservation_informations.is_a?(Array)
+            raise TypeError, "reservation_informations must be an Array"
+        end
+
         reservation_informations.each do |info|
             unless info.is_a?(ReservationInformation)
                 raise TypeError, "All elements must be instances of ReservationInformation"

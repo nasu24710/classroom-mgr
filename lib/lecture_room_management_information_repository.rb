@@ -28,6 +28,10 @@ class LectureRoomManagementInformationRepository
     end
 
     def replace_all(lecture_room_management_informations)
+        unless lecture_room_management_informations.is_a?(Array)
+            raise TypeError, "lecture_room_management_informations must be an Array"
+        end
+
         lecture_room_management_informations.map do |info|
             unless info.is_a?(LectureRoomManagementInformation)
                 raise TypeError, "All elements must be instances of LectureRoomManagementInformation"

@@ -13,9 +13,9 @@ class AcademicCalendarInformationRepository
 
     def replace_all(academic_calendar_informations)
         unless academic_calendar_informations.is_a?(Array)
-            raise ArgumentError, "academic_calendar_informations must be an Array"
+            raise TypeError, "academic_calendar_informations must be an Array"
         end
-        
+
         academic_calendar_informations.map do |info|
             unless info.is_a?(AcademicCalendarInformation)
                 raise TypeError, "All elements must be instances of AcademicCalendarInformation"
