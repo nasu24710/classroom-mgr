@@ -1,6 +1,8 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    minitest (6.0.0)
+      prism (~> 1.5)
     nokogiri (1.19.4-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.19.4-x64-mingw-ucrt)
@@ -9,6 +11,7 @@ GEM
       racc (~> 1.4)
     pastel (0.8.0)
       tty-color (~> 0.5)
+    prism (1.8.1)
     racc (1.8.1)
     rubyXL (3.4.38)
       nokogiri (>= 1.10.8)
@@ -32,6 +35,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  minitest
   rubyXL
   tty-prompt
 

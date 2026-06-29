@@ -11,3 +11,9 @@
 - `select_from_list` rejects invalid `message` type
 - `select_from_list` rejects invalid `options` type
 - `select_from_list` rejects invalid `options` contents
+
+## `manual_check.rb`
+
+- Manual-only check for `InteractiveMenu`
+- Run it directly with `ruby test/interactive_menu/manual_check.rb`
+- This file is not included in the automatic test suite because its name does not end with `_test.rb`

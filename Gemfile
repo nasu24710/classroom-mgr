@@ -6,3 +6,4 @@ source "https://rubygems.org"
 
 gem "rubyXL"
 gem "tty-prompt"
+gem "minitest"
