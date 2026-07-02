@@ -41,6 +41,10 @@ class PrintCommand
   def print_all(lecture_room_management_informations)
     sorted_lecture_room_management_informations =
       lecture_room_management_informations.sort_by do |lecture_room_management_information|
+        if lecture_room_management_information.periods.empty?
+          raise ArgumentError, 'periods must not be empty.'
+        end
+
         [
           lecture_room_management_information.date,
           PeriodMaster::ORDER[lecture_room_management_information.periods.first]

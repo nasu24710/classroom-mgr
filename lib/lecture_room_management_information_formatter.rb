@@ -7,7 +7,9 @@ class LectureRoomManagementInformationFormatter
       tue: "火",
       wed: "水",
       thu: "木",
-      fri: "金"
+      fri: "金",
+      sat: "土",
+      sun: "日"
     }
     
     rows = [] # 各講義室管理情報の各要素の配列の配列
@@ -16,9 +18,37 @@ class LectureRoomManagementInformationFormatter
 
     rows.append(["学期", "日付", "曜日", "時限", "講義室", "科目名・予約名", "担当者・予約者", "備考"])
 
+    grouped_lecture_room_management_informations = {}
+
     lecture_room_management_informations.each do |info|
-      # 時限に関する処理
       sorted_periods = info.periods.sort_by { |period| PeriodMaster::ORDER[period] }
+      
+      # 以下の key に格納されている情報が同じ info をグループ化する
+      key = [
+        info.subject,
+        info.date,
+        sorted_periods
+      ]
+
+      if !grouped_lecture_room_management_informations.key?(key)
+        grouped_lecture_room_management_informations[key] = {
+          info: info,
+          periods: sorted_periods,
+          room_names: [],
+          users: [],
+          comments: []
+        }
+      end
+
+      grouped_lecture_room_management_informations[key][:room_names].append(info.room_name)
+      grouped_lecture_room_management_informations[key][:users].append(info.user)
+      grouped_lecture_room_management_informations[key][:comments].append(info.comment)
+    end
+
+    grouped_lecture_room_management_informations.each_value do |grouped_info|
+      info = grouped_info[:info]
+      # 時限に関する処理
+      sorted_periods = grouped_info[:periods]
       
       groups = []
       current_group = []
@@ -69,10 +99,10 @@ class LectureRoomManagementInformationFormatter
         info.date.strftime("%Y/%m/%d"),
         day_label_table[info.day_of_the_week],
         formatted_periods,
-        info.room_name.to_s,
+        grouped_info[:room_names].uniq.join('　'),
         info.subject.to_s,
-        info.user.to_s,
-        info.comment.to_s
+        grouped_info[:users].uniq.reject(&:empty?).join('　'),
+        grouped_info[:comments].uniq.reject(&:empty?).join('　')
       ])
     end
 
