@@ -118,12 +118,19 @@ class InteractiveMenuTest < Minitest::Test
       menu = InteractiveMenu.new
     end
 
-    result = menu.select_from_list('Choose one', ['Alpha', 'Beta', 'Gamma'])
+    result = nil
+    output = capture_io do
+      result = menu.select_from_list('Choose one', ['Alpha', 'Beta', 'Gamma'])
+    end.first
 
     assert_equal 1, result
     assert_equal ['Choose one'], prompt.select_messages
-    assert_equal [{ show_help: :never }], prompt.select_keywords
+    assert_equal [{ show_help: :never, quiet: true }], prompt.select_keywords
     assert_equal [['Alpha', 0], ['Beta', 1], ['Gamma', 2]], prompt.choices
+    assert_includes output, 'Choose one'
+    assert_includes output, '  Alpha'
+    assert_includes output, '→ Beta'
+    assert_includes output, '  Gamma'
   end
 
   def test_select_from_list_returns_prompt_result
@@ -134,9 +141,29 @@ class InteractiveMenuTest < Minitest::Test
       menu = InteractiveMenu.new
     end
 
-    result = menu.select_from_list('Choose one', ['Alpha', 'Beta', 'Gamma'])
+    result = nil
+    capture_io do
+      result = menu.select_from_list('Choose one', ['Alpha', 'Beta', 'Gamma'])
+    end
 
     assert_equal 2, result
+  end
+
+  def test_select_from_list_outputs_header
+    prompt = FakePrompt.new(select_result: 0)
+    menu = nil
+
+    with_prompt(prompt) do
+      menu = InteractiveMenu.new
+    end
+
+    output = capture_io do
+      menu.select_from_list('Choose one', ['Alpha'], header: 'Name')
+    end.first
+
+    assert_includes output, 'Choose one'
+    assert_includes output, '  Name'
+    assert_includes output, '→ Alpha'
   end
 
   def test_select_from_list_invalid_arguments
@@ -157,6 +184,10 @@ class InteractiveMenuTest < Minitest::Test
 
     assert_raises(TypeError) do
       menu.select_from_list('Choose one', [1, 2])
+    end
+
+    assert_raises(TypeError) do
+      menu.select_from_list('Choose one', ['Alpha'], header: 123)
     end
   end
 
