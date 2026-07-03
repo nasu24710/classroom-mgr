@@ -1,5 +1,6 @@
 require "optparse"
 require_relative "parsed_input"
+require_relative "error_handler"
 
 class InputParser
     COMMAND_NAMES = [
@@ -15,17 +16,17 @@ class InputParser
         # (1) inputが文字列であるか確認する
         unless input.is_a?(String)
             # 仮の出力
-            raise TypeError, "inputにはStringを指定してください．"
+            raise TypeError, "input must be a String"
         end
 
         option_parser = OptionParser.new # (2) OptionParserインスタンスを生成する
-        tokens = input.split # (3) 入力文字列を半角スペースなどで分割する
+        tokens = input.split # (3) 入力文字列を半角スペースで分割する
         command_name = tokens.shift # (4) 先頭要素からコマンド名を取得する
         options = {}
 
-        # 存在するコマンドか確認
+        # (4) コマンド名が有効かどうか確認する
         unless COMMAND_NAMES.include?(command_name)
-            return 1 # マジックナンバーで代用
+            return ErrorHandler::ERROR_UNKNOWN_COMMAND
         end
 
         # (5) コマンドに応じてオプションを登録する
@@ -35,29 +36,23 @@ class InputParser
         begin
             option_parser.parse!(tokens)
         rescue OptionParser::InvalidOption
-            # コマンドに存在しないオプションが入力された場合
-            return 2 # マジックナンバーで代用
+            return ErrorHandler::ERROR_UNKNOWN_OPTION
         rescue OptionParser::MissingArgument
-            # オプションの引数が入力されていない場合
-            return 3 # マジックナンバーで代用
+            return ErrorHandler::ERROR_UNKNOWN_OPTION
         end
 
-        # parse!後にtokensへ残っている要素が引数になる
         arguments = tokens
 
         # (7) ParsedInputインスタンスを生成して返す
-        ParsedInput.new(
-            command_name: command_name,
-            options: options,
-            arguments: arguments
-        )
+        ParsedInput.new(command_name: command_name, options: options, arguments: arguments)
     end
 
+    # オプション引数を登録するメソッド
     def self.register_options(option_parser, command_name, options)
         case command_name
         when "create"
             option_parser.on("-t TERM", "--term TERM") do |term|
-            options[:term] = term
+            options[:term] = term.to_i
             end
         when "print"
             option_parser.on("-d DATE", "--date DATE") do |date|

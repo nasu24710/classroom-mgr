@@ -1,124 +1,74 @@
 require_relative "input_parser"
 require_relative "parsed_input"
-# require_relative "command_factory"
-# require_relative "error_handler"
+require_relative "command_factory"
+require_relative "error_handler"
+require_relative "managed_lecture_room_information_repository"
+require_relative "academic_calendar_information_repository"
+require_relative "timetable_information_repository"
+require_relative "reservation_information_repository"
+require_relative "lecture_room_management_information_repository"
+require_relative "interactive_menu"
+require_relative "excel_data_exporter"
 
 class Application
     def initialize
-        @command_factory = CommandFactory.new
-        # @error_handler = ErrorHandler.new
+        @lecture_room_management_information_repository = LectureRoomManagementInformationRepository.new
+        @academic_calendar_information_repository = AcademicCalendarInformationRepository.new
+        @timetable_information_repository = TimetableInformationRepository.new
+        @reservation_information_repository = ReservationInformationRepository.new
+        @managed_lecture_room_information_repository = ManagedLectureRoomInformationRepository.new
+        @interactive_menu = InteractiveMenu.new
+        @excel_data_exporter = ExcelDataExporter.new
+        @command_factory = CommandFactory.new(
+            @lecture_room_management_information_repository,
+            @academic_calendar_information_repository,
+            @timetable_information_repository,
+            @reservation_information_repository,
+            @managed_lecture_room_information_repository,
+            @interactive_menu,
+            @excel_data_exporter
+        )
     end
 
-    # アプリケーションの処理開始
-    def start_system_loop # quitコマンドが実行されるまでループ
+    # システムのメインループを開始する
+    def start_system_loop
         loop do
-            input = wait_input # 利用者からの入力を取得
-
-            # 入力内容を解析
+            input = wait_input
             parsed_input = InputParser.parse(input)
 
             if parsed_input.is_a?(Integer)
-                # @error_handler.print_error(parsed_input)
-              
-                ## テスト用
-                case parsed_input
-                when 1
-                    # 存在しないコマンドの場合
-                    puts "エラー：無効なコマンドです．"
-                    puts "マニュアルを参照し，有効なコマンドを入力してください．"            
-                when 2
-                    # 存在しないオプションの場合
-                    puts "エラー：無効なオプションです．"
-                    puts "マニュアルを参照し，有効なオプションを入力してください．"
-                when 3
-                    # オプションに引数がない場合
-                    puts "エラー：オプションの引数が指定されていません．" 
-                    puts "マニュアルを参照し，オプションに必要な引数を指定してください．"
-                end
-            
+                @error_handler.print_error(parsed_input) 
                 next
             end 
 
-            # コマンドのインスタンスを作成
-            command = @command_factory.create(parsed_input)
+            command = @command_factory.create(
+                parsed_input.command_name, 
+                parsed_input.arguments,
+                parsed_input.options
+            )
             command_result = command.execute # コマンドを実行
 
-            # コマンドに失敗した場合
-            unless command_result.success?
-                puts "コマンドの実行に失敗しました" 
-                # @error_handler.print_error(command_result.error_number)
+            # コマンドの実行結果を確認し，失敗している場合はエラー番号を表示する
+            unless command_result.is_succeed
+                @error_handler.print_error(command_result.error_number)
             end
 
             stop_system if command_result.exit_flag # exit_flagが立っていたら終了
         end
     end
 
-    # 利用者からの入力待ち
     def wait_input
         print "> "
 
         $stdin.set_encoding(Encoding::UTF_8)
-        input = $stdin.gets # 入力を受け取る
+        input = $stdin.gets
         return nil if input.nil?
 
         input.chomp # 改行コードを削除
     end
 
-    # システムの終了
     def stop_system
         puts "システムが終了しました．"
         exit
-    end
-end
-
-## ここから下は動作確認用の仮実装
-class CommandFactory
-    def create(parsed_input)
-        case parsed_input.command_name
-        when "read", "write", "create", "print", "select"
-          TestCommand.new(parsed_input)
-        
-        when "quit"
-        TestQuitCommand.new
-        end
-    end
-end
-
-class TestCommand
-    def initialize(parsed_input)
-        @parsed_input = parsed_input
-    end
-  
-    def execute
-        puts "コマンド名：#{@parsed_input.command_name}"
-        puts "引数：#{@parsed_input.arguments.inspect}"
-        puts "オプション：#{@parsed_input.options.inspect}"
-      
-        CommandResult.new(
-          success: true,
-          exit_flag: false
-        )
-    end
-end
-  
-class TestQuitCommand
-    def execute
-        CommandResult.new(
-          success: true,
-          exit_flag: true
-        )
-    end
-end
-  
-class CommandResult
-    attr_reader :exit_flag
-  
-    def initialize(success:, exit_flag:)
-        @success = success
-        @exit_flag = exit_flag
-    end
-  
-    def success?
-        @success
     end
 end
