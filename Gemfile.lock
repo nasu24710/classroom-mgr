@@ -17,9 +17,6 @@ GEM
       nokogiri (>= 1.10.8)
       rubyzip (>= 3.2.2)
     rubyzip (3.4.0)
-    unicode-display_width (3.2.0)
-      unicode-emoji (~> 4.1)
-    unicode-emoji (4.2.0)
     tty-color (0.6.0)
     tty-cursor (0.7.1)
     tty-prompt (0.23.1)
@@ -30,6 +27,9 @@ GEM
       tty-screen (~> 0.8)
       wisper (~> 2.0)
     tty-screen (0.8.2)
+    unicode-display_width (3.2.0)
+      unicode-emoji (~> 4.1)
+    unicode-emoji (4.2.0)
     wisper (2.0.1)
 
 PLATFORMS
@@ -40,8 +40,8 @@ PLATFORMS
 DEPENDENCIES
   minitest
   rubyXL
-  unicode-display_width
   tty-prompt
+  unicode-display_width
 
 BUNDLED WITH
    2.4.19
