@@ -59,7 +59,7 @@ class WriteCommand
       @excel_data_exporter.export(lecture_room_management_workbook,@file_name)
 
       puts "講義室管理一覧表の作成が完了しました．"
-
+      puts "出力先： output/#{@file_name}"
       return CommandResult.new(false,true,0)
     end
   end
