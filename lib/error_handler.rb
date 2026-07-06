@@ -22,6 +22,7 @@ class ErrorHandler
   ERROR_ACADEMIC_CALENDAR_LOAD_FAILED = 19
   ERROR_TIMETABLE_LOAD_FAILED = 20
   ERROR_RESERVATION_LOAD_FAILED = 21
+  ERROR_INVALID_DATE_FORMAT = 22
 
   # コマンド処理が返すエラー番号と，画面に表示するエラーメッセージを対応づける。
   NUMBER_TO_ERROR_SENTENCE = {
@@ -45,7 +46,8 @@ class ErrorHandler
     ERROR_MANAGED_LECTURE_ROOM_NOT_SELECTED => "エラー：管理対象講義室は設定されませんでした．\n管理対象講義室データを確認し，内容を更新してください．",
     ERROR_ACADEMIC_CALENDAR_LOAD_FAILED => "エラー：学年暦データの読み込みに失敗しました．",
     ERROR_TIMETABLE_LOAD_FAILED => "エラー：時間割データの読み込みに失敗しました．",
-    ERROR_RESERVATION_LOAD_FAILED => "エラー：予約データの読み込みに失敗しました．"
+    ERROR_RESERVATION_LOAD_FAILED => "エラー：予約データの読み込みに失敗しました．",
+    ERROR_INVALID_DATE_FORMAT => "エラー：日付の形式が正しくありません．\n有効な日付を入力してください．"
   }.freeze
 
   def self.print_error(error_number)
