@@ -91,7 +91,7 @@ class SelectCommand < Command
     @lecture_room_management_information_repository.replace_all([])
 
     puts "管理対象講義室の設定が完了しました．"
-    puts "講義室管理情報を空にしました．"
+    puts "管理対象講義室の変更に伴い，講義室管理情報をリセットしました．"
     CommandResult.new(false, true, SUCCESS)
   end
 end
