@@ -52,6 +52,32 @@ class InteractiveConflictResolutionServiceTest < Minitest::Test
         assert_instance_of InteractiveConflictResolutionService, service
     end
 
+    def test_execute_expands_full_lecture_room_information_before_detecting_conflicts
+        full_lecture_room_information = lecture_room_management_information(
+            room_name: '全講義室',
+            periods: [:p1, :p2],
+            subject: 'Seminar',
+            user: 'Coordinator',
+            comment: 'All rooms'
+        )
+        repository = LectureRoomManagementInformationRepository.new(
+            lecture_room_management_informations: [full_lecture_room_information]
+        )
+        menu = FakeInteractiveMenu.new(0)
+        service = InteractiveConflictResolutionService.new(
+            repository,
+            menu,
+            managed_repository(['第1講義室', '第100講義室', '会議室'])
+        )
+
+        output = capture_io { service.execute }.first
+
+        assert_equal 2, repository.find_all.length
+        assert_equal ['第1講義室', '第100講義室'], repository.find_all.map(&:room_name)
+        assert_equal [:p1, :p2], repository.find_all.first.periods
+        assert_equal '', output
+    end
+
     def test_invalid_initialization_arguments
         repository = LectureRoomManagementInformationRepository.new
         menu = FakeInteractiveMenu.new(0)
@@ -262,7 +288,11 @@ class InteractiveConflictResolutionServiceTest < Minitest::Test
         )
     end
 
-    def managed_repository
-        ManagedLectureRoomInformationRepository.new
+    def managed_repository(room_names = [])
+        ManagedLectureRoomInformationRepository.new(
+            managed_lecture_room_informations: room_names.map do |room_name|
+                ManagedLectureRoomInformation.new(room_name: room_name)
+            end
+        )
     end
 end

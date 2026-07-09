@@ -1,6 +1,7 @@
 require_relative 'conflict'
 require_relative 'conflict_detector'
 require_relative 'interactive_menu'
+require_relative 'lecture_room_management_information'
 require_relative 'lecture_room_management_information_repository'
 require_relative 'managed_lecture_room_information_repository'
 require_relative 'period_master'
@@ -30,10 +31,15 @@ class InteractiveConflictResolutionService
 
     def execute
         resolved_conflict_count = 0
-        lecture_room_management_informations = @lecture_room_management_information_repository.find_all
+        managed_lecture_room_information_list = managed_lecture_room_informations
+        lecture_room_management_informations = expand_full_lecture_room_informations(
+            @lecture_room_management_information_repository.find_all,
+            managed_lecture_room_information_list
+        )
+        @lecture_room_management_information_repository.replace_all(lecture_room_management_informations)
         conflicts = ConflictDetector.detect_conflicts(
             lecture_room_management_informations,
-            managed_lecture_room_informations: managed_lecture_room_informations
+            managed_lecture_room_informations: managed_lecture_room_information_list
         )
         initial_conflict_count = conflicts.length
 
@@ -130,6 +136,44 @@ class InteractiveConflictResolutionService
 
     def managed_lecture_room_informations
         @managed_lecture_room_information_repository.find_all
+    end
+
+    def expand_full_lecture_room_informations(
+        lecture_room_management_informations,
+        managed_lecture_room_informations
+    )
+        managed_room_names = managed_lecture_room_informations.map do |information|
+            normalize_room_name(information.room_name)
+        end
+
+        lecture_room_management_informations.flat_map do |information|
+            if LectureRoomManagementInformation.full_lecture_room_name?(information.room_name)
+                expand_full_lecture_room_information(information, managed_room_names)
+            else
+                [information]
+            end
+        end
+    end
+
+    def expand_full_lecture_room_information(lecture_room_management_information, managed_room_names)
+        managed_room_names.filter_map do |room_name|
+            next unless LectureRoomManagementInformation.lecture_room_name?(room_name)
+
+            LectureRoomManagementInformation.new(
+                date: lecture_room_management_information.date,
+                day_of_the_week: lecture_room_management_information.day_of_the_week,
+                term: lecture_room_management_information.term,
+                periods: lecture_room_management_information.periods,
+                room_name: room_name,
+                subject: lecture_room_management_information.subject,
+                user: lecture_room_management_information.user,
+                comment: lecture_room_management_information.comment
+            )
+        end
+    end
+
+    def normalize_room_name(room_name)
+        room_name.unicode_normalize(:nfkc)
     end
 
     def remove_related_informations(information)
