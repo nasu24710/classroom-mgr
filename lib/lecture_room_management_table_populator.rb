@@ -34,7 +34,9 @@ class LectureRoomManagementTablePopulator
     excel_formatter = LectureRoomManagementExcelFormatter.new
     excel_formatter_format = excel_formatter.format(lecture_room_management_information)
 
-    worksheet, row_index = @lecture_room_management_table_building_result.row_map[[date,room_name]]
+    worksheet, row_index =
+      @lecture_room_management_table_building_result.row_map[[date,room_name]] ||
+      @lecture_room_management_table_building_result.row_map[[date,room_name.unicode_normalize(:nfkc)]]
 
     periods.each do |period|
       column_index = @lecture_room_management_table_building_result.column_map[period]

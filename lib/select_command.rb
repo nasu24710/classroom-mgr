@@ -3,52 +3,24 @@
 require_relative "command"
 require_relative "excel_data_loader"
 require_relative "interactive_menu"
+require_relative "lecture_room_management_information_repository"
 require_relative "managed_lecture_room_information_repository"
 require_relative "managed_lecture_room_parser"
 
 class SelectCommand < Command
-  VALID_LECTURE_ROOM_NAMES = [
-    "1講",
-    "第1講義室",
-    "2講",
-    "第2講義室",
-    "4講",
-    "第4講義室",
-    "5講",
-    "第5講義室",
-    "10講",
-    "第10講義室",
-    "11講",
-    "第11講義室",
-    "14講",
-    "第14講義室",
-    "15講",
-    "第15講義室",
-    "17講",
-    "第17講義室",
-    "プログラミング演習室1",
-    "プログラミング演習室2",
-    "環104",
-    "環104室",
-    "自然大",
-    "環101",
-    "環101室",
-    "303",
-    "303室",
-    "103",
-    "103室",
-    "一般B41",
-    "一般B41室",
-    "一般B33",
-    "一般B33室",
-    "コモンズ",
-    "工大"
-  ].freeze
-
-  def initialize(managed_lecture_room_information_repository, interactive_menu)
+  def initialize(
+    managed_lecture_room_information_repository,
+    lecture_room_management_information_repository,
+    interactive_menu
+  )
     unless managed_lecture_room_information_repository.is_a?(ManagedLectureRoomInformationRepository)
       raise TypeError,
             "managed_lecture_room_information_repository must be a ManagedLectureRoomInformationRepository"
+    end
+
+    unless lecture_room_management_information_repository.is_a?(LectureRoomManagementInformationRepository)
+      raise TypeError,
+            "lecture_room_management_information_repository must be a LectureRoomManagementInformationRepository"
     end
 
     unless interactive_menu.is_a?(InteractiveMenu)
@@ -56,6 +28,7 @@ class SelectCommand < Command
     end
 
     @managed_lecture_room_information_repository = managed_lecture_room_information_repository
+    @lecture_room_management_information_repository = lecture_room_management_information_repository
     @interactive_menu = interactive_menu
   end
 
@@ -80,12 +53,10 @@ class SelectCommand < Command
     worksheet = workbook[0]
     parser = ManagedLectureRoomParser.new(worksheet)
     managed_lecture_room_informations = parser.parse_managed_lecture_room_worksheet
-    contains_invalid_name = managed_lecture_room_informations.any? do |information|
-      normalized_room_name = information.room_name.unicode_normalize(:nfkc)
-      !VALID_LECTURE_ROOM_NAMES.include?(normalized_room_name)
-    end
+    room_names = managed_lecture_room_informations.map(&:room_name)
+    has_duplicate_room_name = room_names.uniq.length != room_names.length
 
-    if managed_lecture_room_informations.empty? || contains_invalid_name
+    if managed_lecture_room_informations.empty? || has_duplicate_room_name
       return CommandResult.new(
         false,
         false,
@@ -104,6 +75,9 @@ class SelectCommand < Command
       "表示されている講義室を管理対象としますか？"
     )
     unless is_selected
+      @managed_lecture_room_information_repository.replace_all([])
+      @lecture_room_management_information_repository.replace_all([])
+
       return CommandResult.new(
         false,
         false,
@@ -114,8 +88,10 @@ class SelectCommand < Command
     @managed_lecture_room_information_repository.replace_all(
       managed_lecture_room_informations
     )
+    @lecture_room_management_information_repository.replace_all([])
 
     puts "管理対象講義室の設定が完了しました．"
+    puts "管理対象講義室の変更に伴い，講義室管理情報をリセットしました．"
     CommandResult.new(false, true, SUCCESS)
   end
 end

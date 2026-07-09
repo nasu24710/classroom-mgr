@@ -172,6 +172,7 @@ class LectureRoomManagementTableBuilder
       managed_lecture_room_informations.each do |managed_lecture_room_information|
         managed_lecture_room_cell = worksheet.add_cell(managed_lecture_room_row,1,"#{managed_lecture_room_information.room_name}")
         row_map[[academic_calendar_information.date,managed_lecture_room_information.room_name]] = [worksheet,managed_lecture_room_row]
+        row_map[[academic_calendar_information.date,managed_lecture_room_information.room_name.unicode_normalize(:nfkc)]] = [worksheet,managed_lecture_room_row]
         worksheet.change_row_height(managed_lecture_room_row, row_height)
         managed_lecture_room_cell.change_font_size(9)
 
