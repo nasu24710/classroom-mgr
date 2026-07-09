@@ -232,6 +232,7 @@ class LectureRoomManagementInformationTest < Minitest::Test
 
     def test_lecture_room_name_predicate_accepts_only_positive_integers
         assert LectureRoomManagementInformation.lecture_room_name?('第1講義室')
+        assert LectureRoomManagementInformation.lecture_room_name?('第１講義室')
         assert LectureRoomManagementInformation.lecture_room_name?('第100講義室')
         refute LectureRoomManagementInformation.lecture_room_name?('第01講義室')
         refute LectureRoomManagementInformation.lecture_room_name?('第0講義室')

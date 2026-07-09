@@ -32,11 +32,7 @@ class InteractiveConflictResolutionService
     def execute
         resolved_conflict_count = 0
         managed_lecture_room_information_list = managed_lecture_room_informations
-        lecture_room_management_informations = expand_full_lecture_room_informations(
-            @lecture_room_management_information_repository.find_all,
-            managed_lecture_room_information_list
-        )
-        @lecture_room_management_information_repository.replace_all(lecture_room_management_informations)
+        lecture_room_management_informations = @lecture_room_management_information_repository.find_all
         conflicts = ConflictDetector.detect_conflicts(
             lecture_room_management_informations,
             managed_lecture_room_informations: managed_lecture_room_information_list
@@ -64,6 +60,12 @@ class InteractiveConflictResolutionService
                 managed_lecture_room_informations: managed_lecture_room_informations
             )
         end
+
+        lecture_room_management_informations = expand_full_lecture_room_informations(
+            @lecture_room_management_information_repository.find_all,
+            managed_lecture_room_information_list
+        )
+        @lecture_room_management_information_repository.replace_all(lecture_room_management_informations)
 
         puts "#{initial_conflict_count}件の競合を解消しました．" if initial_conflict_count.positive?
     end
@@ -143,7 +145,7 @@ class InteractiveConflictResolutionService
         managed_lecture_room_informations
     )
         managed_room_names = managed_lecture_room_informations.map do |information|
-            normalize_room_name(information.room_name)
+            [information.room_name, normalize_room_name(information.room_name)]
         end
 
         lecture_room_management_informations.flat_map do |information|
@@ -156,15 +158,15 @@ class InteractiveConflictResolutionService
     end
 
     def expand_full_lecture_room_information(lecture_room_management_information, managed_room_names)
-        managed_room_names.filter_map do |room_name|
-            next unless LectureRoomManagementInformation.lecture_room_name?(room_name)
+        managed_room_names.filter_map do |original_room_name, normalized_room_name|
+            next unless LectureRoomManagementInformation.lecture_room_name?(normalized_room_name)
 
             LectureRoomManagementInformation.new(
                 date: lecture_room_management_information.date,
                 day_of_the_week: lecture_room_management_information.day_of_the_week,
                 term: lecture_room_management_information.term,
                 periods: lecture_room_management_information.periods,
-                room_name: room_name,
+                room_name: original_room_name,
                 subject: lecture_room_management_information.subject,
                 user: lecture_room_management_information.user,
                 comment: lecture_room_management_information.comment

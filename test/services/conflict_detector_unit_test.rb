@@ -233,6 +233,19 @@ class ConflictDetectorTest < Minitest::Test
         ], conflicts.first.conflicting_informations
     end
 
+    def test_detect_conflicts_treats_full_width_managed_room_name_as_conflicting_with_specific_lecture_room
+        conflicts = ConflictDetector.detect_conflicts([
+            @full_lecture_room_information,
+            @specific_lecture_room_information
+        ], managed_lecture_room_informations: [
+            ManagedLectureRoomInformation.new(room_name: '第１講義室')
+        ])
+
+        assert_equal 1, conflicts.length
+        assert_equal '全講義室', conflicts.first.room_name
+        assert_equal [:p2], conflicts.first.period
+    end
+
     def test_invalid_arguments
         assert_raises(TypeError) { ConflictDetector.detect_conflicts('not array') }
         assert_raises(TypeError) { ConflictDetector.detect_conflicts(['not information']) }

@@ -23,7 +23,9 @@ class ConflictDetector
         end
 
         conflicts = []
-        managed_room_names = managed_lecture_room_informations&.map(&:room_name)
+        managed_room_names = managed_lecture_room_informations&.map do |information|
+            normalize_room_name(information.room_name)
+        end
 
         lecture_room_management_informations.combination(2) do |information, other_information|
             conflicting_periods = information.conflicting_periods_with(
@@ -55,8 +57,12 @@ class ConflictDetector
 
     def includes_managed_room?(lecture_room_management_informations, managed_room_names)
         lecture_room_management_informations.any? do |information|
-            managed_room_names.include?(information.room_name)
+            managed_room_names.include?(normalize_room_name(information.room_name))
         end
+    end
+
+    def normalize_room_name(room_name)
+        room_name.is_a?(String) ? room_name.unicode_normalize(:nfkc) : room_name
     end
 
     def related_informations(lecture_room_management_informations, lecture_room_management_information)
