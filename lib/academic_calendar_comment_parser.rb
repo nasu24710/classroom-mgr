@@ -126,8 +126,8 @@ class AcademicCalendarCommentParser
       return nil
     end
 
-    description_text = description_text.gsub(/([月火水木金土日])曜日の授業(?:\([^)]*\))?(?:を行う)?/, '\1曜日授業')
     day_of_the_week_change, is_holiday, is_university_festival = classify_type(description_text)
+    description_text = description_text.gsub(/([月火水木金土日])曜日の授業(?:\([^)]*\))?(?:を行う)?/, '\1曜日授業')
 
     dates.each do |date|
       description_for_comment = is_university_festival ? '大学祭' : description_text

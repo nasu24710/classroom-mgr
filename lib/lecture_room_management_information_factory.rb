@@ -18,8 +18,8 @@ class LectureRoomManagementInformationFactory
     unless managed_lecture_room_informations.is_a?(Array)
       raise TypeError, 'managed_lecture_room_informations must be a Array.'
     end
-    unless term.nil? || term.is_a?(Integer)
-      raise TypeError, 'term must be nil or a Integer.'
+    unless (term.is_a?(Integer) && 1 <= term && term <= 4) || term.nil?
+      raise TypeError, 'term must be nil or a Integer (1 ~ 4).'
     end
 
     @academic_calendar_informations = academic_calendar_informations
@@ -31,8 +31,17 @@ class LectureRoomManagementInformationFactory
 
   def create_from_timetable_informations
     lecture_room_management_informations = []
-    
-    @timetable_informations.each do |timetable_information|
+
+    target_timetable_informations =
+      if @term.nil?
+        @timetable_informations
+      else
+        @timetable_informations.select do |timetable_information|
+          timetable_information.term == @term
+        end
+      end
+
+    target_timetable_informations.each do |timetable_information|
       lecture_room_management_informations +=
         create_from_timetable_information(timetable_information)
     end
@@ -44,10 +53,17 @@ class LectureRoomManagementInformationFactory
     lecture_room_management_informations = []
 
     @reservation_informations.each do |reservation_information|
-      if (lecture_room_management_informations_of_reservation_information = create_from_reservation_information(reservation_information)) != nil
-        lecture_room_management_informations +=
-          lecture_room_management_informations_of_reservation_information
+      informations = create_from_reservation_information(reservation_information)
+
+      next if informations.nil?
+
+      if @term != nil
+        informations = informations.select do |info|
+          info.term == @term
+        end
       end
+
+      lecture_room_management_informations += informations
     end
 
     return lecture_room_management_informations
@@ -60,8 +76,18 @@ class LectureRoomManagementInformationFactory
     
     filtered_academic_calendar_informations = 
       @academic_calendar_informations.select do |academic_calendar_information|
-        academic_calendar_information.day_of_the_week == timetable_information.day_of_the_week &&
-        academic_calendar_information.term == timetable_information.term
+        effective_day_of_the_week =
+          if academic_calendar_information.day_attribute.day_of_the_week_changes != nil
+            academic_calendar_information.day_attribute.day_of_the_week_changes
+          else
+            academic_calendar_information.day_of_the_week
+          end
+
+        academic_calendar_information.term == timetable_information.term &&
+        academic_calendar_information.day_attribute.is_public_holiday == false &&
+        academic_calendar_information.day_attribute.is_holiday == false &&
+        academic_calendar_information.day_attribute.is_makeup_class == false &&
+        effective_day_of_the_week == timetable_information.day_of_the_week
       end
     
     lecture_room_management_informations = []
@@ -76,7 +102,7 @@ class LectureRoomManagementInformationFactory
             room_name: room_name,
             subject: timetable_information.subject,
             user: timetable_information.user,
-            comment: ""
+            comment: information.day_attribute.comments.nil? ? "" : information.day_attribute.comments.join("　")
           )
         )
       end
@@ -95,10 +121,9 @@ class LectureRoomManagementInformationFactory
         academic_calendar_information.date == reservation_information.date
       end
     
-    if filtered_academic_calendar_informations.empty?
-      return nil
+    if filtered_academic_calendar_informations.length == 0
+      raise '該当するAcademicCalendarInformationがありません．'
     end
-
     if filtered_academic_calendar_informations.length > 1
       raise '該当するAcademicCalendarInformationが複数あります．'
     end
@@ -116,7 +141,7 @@ class LectureRoomManagementInformationFactory
           room_name: room_name,
           subject: reservation_information.subject,
           user: reservation_information.user,
-          comment: ""
+          comment: filtered_academic_calendar_information.day_attribute.comments.nil? ? "" : filtered_academic_calendar_information.day_attribute.comments.join("　")
         )
       )
     end

@@ -1,3 +1,4 @@
+require_relative "command"
 require_relative "command_result"
 require_relative "error_handler"
 require_relative "academic_calendar_information_repository"
@@ -6,7 +7,7 @@ require_relative "lecture_room_management_information_factory"
 require_relative "reservation_information_repository"
 require_relative "timetable_information_repository"
 
-class CreateCommand
+class CreateCommand < Command
   def initialize(
     lecture_room_management_information_repository,
     academic_calendar_information_repository,
@@ -34,8 +35,8 @@ class CreateCommand
     unless interactive_menu.is_a?(InteractiveMenu)
       raise TypeError, 'interactive_menu must be a InteractiveMenu.'
     end
-    unless term.nil? || term.is_a?(Integer)
-      raise TypeError, 'term must be nil or a Integer.'
+    unless term.is_a?(Integer) || term.nil?
+      raise TypeError, 'term must be a Integer or nil.'
     end
 
     @lecture_room_management_information_repository = lecture_room_management_information_repository
@@ -48,6 +49,10 @@ class CreateCommand
   end
 
   def execute
+    if (@term != nil && ![1, 2, 3, 4].include?(@term))
+      return CommandResult.new(false, false, 15)
+    end
+
     if (managed_lecture_room_informations = @managed_lecture_room_information_repository.find_all).empty?
       return CommandResult.new(false, false, 11)
     end
@@ -79,7 +84,7 @@ class CreateCommand
         @lecture_room_management_information_repository,
         @interactive_menu,
         @managed_lecture_room_information_repository
-    )
+      )
     interactive_conflict_resolution_service.execute
 
     puts "講義室管理情報の作成が完了しました．"
