@@ -76,7 +76,12 @@ class CreateCommand < Command
       )
     
     lecture_room_management_informations = lecture_room_management_information_factory.create_from_timetable_informations
-    lecture_room_management_informations += lecture_room_management_information_factory.create_from_reservation_informations
+    reservation_lecture_room_management_informations = lecture_room_management_information_factory.create_from_reservation_informations
+    if reservation_lecture_room_management_informations == nil
+      return CommandResult.new(false, false, ErrorHandler::ERROR_RESERVATION_DATE_NOT_FOUND_IN_ACADEMIC_CALENDAR)
+    end
+
+    lecture_room_management_informations += reservation_lecture_room_management_informations
     @lecture_room_management_information_repository.replace_all(lecture_room_management_informations)
 
     interactive_conflict_resolution_service =
