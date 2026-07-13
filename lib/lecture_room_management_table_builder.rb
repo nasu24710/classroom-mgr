@@ -85,16 +85,7 @@ class LectureRoomManagementTableBuilder
         exam_period_cell.change_font_color("FF0000") 
         change_alignment(exam_period_cell) 
       end
-
-      # 休業日をセルに登録する。
-      if academic_calendar_information.day_attribute.is_public_holiday == true
-        public_holiday_cell = worksheet.add_cell(month_day_row,0,"休業日")
-        month_day_row = month_day_row + 1
-        public_holiday_cell.change_font_size(12)
-        public_holiday_cell.change_font_color("00B050") 
-        change_alignment(public_holiday_cell) 
-      end
-
+      
       # コメント（備考）の数だけセルに登録していく。
       unless academic_calendar_information.day_attribute.comments.nil?
         academic_calendar_information.day_attribute.comments.each.with_index do |comment,index|
