@@ -28,11 +28,11 @@ class ErrorHandler
   # コマンド処理が返すエラー番号と，画面に表示するエラーメッセージを対応づける。
   NUMBER_TO_ERROR_SENTENCE = {
     ERROR_UNKNOWN_COMMAND => "エラー: 無効なコマンドです．\nマニュアルを参照し．有効なコマンドを入力してください．",
-    ERROR_ACADEMIC_CALENDAR_FILE_NOT_FOUND => "エラー：学年暦データが見つかりません．\n学年暦データを「2026/学年暦/ 」ディレクトリにアップロードしてください．",
+    ERROR_ACADEMIC_CALENDAR_FILE_NOT_FOUND => "エラー：学年暦データが見つかりません．\n学年暦データを「学年暦/ 」ディレクトリにアップロードしてください．",
     ERROR_ACADEMIC_CALENDAR_PARSE_FAILED => "エラー：学年暦データが読み込めません．\nファイル形式，または内容を確認してください．",
-    ERROR_TIMETABLE_FILE_NOT_FOUND => "エラー：時間割データが見つかりません．\n時間割データを「2026/時間割/ 」ディレクトリにアップロードしてください．",
+    ERROR_TIMETABLE_FILE_NOT_FOUND => "エラー：時間割データが見つかりません．\n時間割データを「時間割/ 」ディレクトリにアップロードしてください．",
     ERROR_TIMETABLE_PARSE_FAILED => "エラー：時間割データが読み込めません．\nファイル形式，または内容を確認してください．",
-    ERROR_RESERVATION_FILE_NOT_FOUND => "エラー：予約データが見つかりません．\n予約データを「2026/予約/ 」ディレクトリにアップロードしてください．",
+    ERROR_RESERVATION_FILE_NOT_FOUND => "エラー：予約データが見つかりません．\n予約データを「予約/ 」ディレクトリにアップロードしてください．",
     ERROR_RESERVATION_PARSE_FAILED => "エラー：予約データが読み込めません．\nファイル形式，または内容を確認してください．",
     ERROR_DIRECTORY_NOT_SPECIFIED => "エラー：ディレクトリ名が指定されていません．\nデータをアップロードしたディレクトリ名を入力してください．",
     ERROR_MANAGED_LECTURE_ROOM_FILE_NOT_FOUND => "エラー：管理対象講義室データが見つかりません．\n管理対象講義室データを「data/管理対象講義室/ 」ディレクトリにアップロードしてください．",
