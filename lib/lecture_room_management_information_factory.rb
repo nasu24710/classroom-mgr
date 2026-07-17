@@ -55,8 +55,10 @@ class LectureRoomManagementInformationFactory
     @reservation_informations.each do |reservation_information|
       informations = create_from_reservation_information(reservation_information)
 
-      next if informations.nil?
-
+      if informations.nil?
+        return nil
+      end
+      
       if @term != nil
         informations = informations.select do |info|
           info.term == @term
@@ -121,11 +123,8 @@ class LectureRoomManagementInformationFactory
         academic_calendar_information.date == reservation_information.date
       end
     
-    if filtered_academic_calendar_informations.length == 0
-      raise '該当するAcademicCalendarInformationがありません．'
-    end
-    if filtered_academic_calendar_informations.length > 1
-      raise '該当するAcademicCalendarInformationが複数あります．'
+    if filtered_academic_calendar_informations.empty? || filtered_academic_calendar_informations.length > 1
+      return nil
     end
 
     filtered_academic_calendar_information = filtered_academic_calendar_informations.first

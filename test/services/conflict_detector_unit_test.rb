@@ -43,6 +43,26 @@ class ConflictDetectorTest < Minitest::Test
             user: 'Alice',
             comment: 'Third booking'
         )
+        @full_lecture_room_information = LectureRoomManagementInformation.new(
+            date: Date.new(2024, 6, 1),
+            day_of_the_week: :sat,
+            term: 1,
+            periods: [:p1, :p2],
+            room_name: '全講義室',
+            subject: 'Seminar',
+            user: 'Coordinator',
+            comment: 'All rooms'
+        )
+        @specific_lecture_room_information = LectureRoomManagementInformation.new(
+            date: Date.new(2024, 6, 1),
+            day_of_the_week: :sat,
+            term: 1,
+            periods: [:p2, :p3],
+            room_name: '第1講義室',
+            subject: 'Workshop',
+            user: 'Presenter',
+            comment: 'Specific room'
+        )
     end
 
     def test_detect_conflicts
@@ -194,6 +214,36 @@ class ConflictDetectorTest < Minitest::Test
             related_managed_information,
             unmanaged_conflicting_information
         ], conflicts.first.conflicting_informations
+    end
+
+    def test_detect_conflicts_treats_full_lecture_room_as_conflicting_with_specific_lecture_room
+        conflicts = ConflictDetector.detect_conflicts([
+            @full_lecture_room_information,
+            @specific_lecture_room_information
+        ], managed_lecture_room_informations: [
+            ManagedLectureRoomInformation.new(room_name: '第1講義室')
+        ])
+
+        assert_equal 1, conflicts.length
+        assert_equal '全講義室', conflicts.first.room_name
+        assert_equal [:p2], conflicts.first.period
+        assert_equal [
+            @full_lecture_room_information,
+            @specific_lecture_room_information
+        ], conflicts.first.conflicting_informations
+    end
+
+    def test_detect_conflicts_treats_full_width_managed_room_name_as_conflicting_with_specific_lecture_room
+        conflicts = ConflictDetector.detect_conflicts([
+            @full_lecture_room_information,
+            @specific_lecture_room_information
+        ], managed_lecture_room_informations: [
+            ManagedLectureRoomInformation.new(room_name: '第１講義室')
+        ])
+
+        assert_equal 1, conflicts.length
+        assert_equal '全講義室', conflicts.first.room_name
+        assert_equal [:p2], conflicts.first.period
     end
 
     def test_invalid_arguments

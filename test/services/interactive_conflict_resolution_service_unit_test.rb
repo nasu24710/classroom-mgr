@@ -52,6 +52,67 @@ class InteractiveConflictResolutionServiceTest < Minitest::Test
         assert_instance_of InteractiveConflictResolutionService, service
     end
 
+    def test_execute_keeps_full_lecture_room_information_after_resolving_conflicts
+        full_lecture_room_information = lecture_room_management_information(
+            room_name: '全講義室',
+            periods: [:p1, :p2],
+            subject: 'Seminar',
+            user: 'Coordinator',
+            comment: 'All rooms'
+        )
+        repository = LectureRoomManagementInformationRepository.new(
+            lecture_room_management_informations: [full_lecture_room_information]
+        )
+        menu = FakeInteractiveMenu.new(0)
+        service = InteractiveConflictResolutionService.new(
+            repository,
+            menu,
+            managed_repository(['第１講義室', '第100講義室', '会議室'])
+        )
+
+        output = capture_io { service.execute }.first
+
+        assert_equal 1, repository.find_all.length
+        assert_equal ['全講義室'], repository.find_all.map(&:room_name)
+        assert_equal [:p1, :p2], repository.find_all.first.periods
+        assert_equal '', output
+    end
+
+    def test_execute_detects_conflicts_before_clearing_full_lecture_room_information
+        full_lecture_room_information = lecture_room_management_information(
+            room_name: '全講義室',
+            periods: [:p1, :p2],
+            subject: 'Seminar',
+            user: 'Coordinator',
+            comment: 'All rooms'
+        )
+        specific_lecture_room_information = lecture_room_management_information(
+            room_name: '第1講義室',
+            periods: [:p2, :p3],
+            subject: 'Workshop',
+            user: 'Presenter',
+            comment: 'Specific room'
+        )
+        repository = LectureRoomManagementInformationRepository.new(
+            lecture_room_management_informations: [
+                full_lecture_room_information,
+                specific_lecture_room_information
+            ]
+        )
+        menu = FakeInteractiveMenu.new(0)
+        service = InteractiveConflictResolutionService.new(
+            repository,
+            menu,
+            managed_repository(['第1講義室', '第100講義室', '会議室'])
+        )
+
+        output = capture_io { service.execute }.first
+
+        assert_includes output, '講義室： 全講義室'
+        assert_includes output, '科目名・予約名「Seminar」が選択されました．'
+        assert_equal ['全講義室'], repository.find_all.map(&:room_name)
+    end
+
     def test_invalid_initialization_arguments
         repository = LectureRoomManagementInformationRepository.new
         menu = FakeInteractiveMenu.new(0)
@@ -262,7 +323,11 @@ class InteractiveConflictResolutionServiceTest < Minitest::Test
         )
     end
 
-    def managed_repository
-        ManagedLectureRoomInformationRepository.new
+    def managed_repository(room_names = [])
+        ManagedLectureRoomInformationRepository.new(
+            managed_lecture_room_informations: room_names.map do |room_name|
+                ManagedLectureRoomInformation.new(room_name: room_name)
+            end
+        )
     end
 end

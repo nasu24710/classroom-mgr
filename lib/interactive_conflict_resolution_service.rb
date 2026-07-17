@@ -1,6 +1,7 @@
 require_relative 'conflict'
 require_relative 'conflict_detector'
 require_relative 'interactive_menu'
+require_relative 'lecture_room_management_information'
 require_relative 'lecture_room_management_information_repository'
 require_relative 'managed_lecture_room_information_repository'
 require_relative 'period_master'
@@ -30,10 +31,11 @@ class InteractiveConflictResolutionService
 
     def execute
         resolved_conflict_count = 0
+        managed_lecture_room_information_list = managed_lecture_room_informations
         lecture_room_management_informations = @lecture_room_management_information_repository.find_all
         conflicts = ConflictDetector.detect_conflicts(
             lecture_room_management_informations,
-            managed_lecture_room_informations: managed_lecture_room_informations
+            managed_lecture_room_informations: managed_lecture_room_information_list
         )
         initial_conflict_count = conflicts.length
 
@@ -58,6 +60,7 @@ class InteractiveConflictResolutionService
                 managed_lecture_room_informations: managed_lecture_room_informations
             )
         end
+
 
         puts "#{initial_conflict_count}件の競合を解消しました．" if initial_conflict_count.positive?
     end
@@ -131,6 +134,7 @@ class InteractiveConflictResolutionService
     def managed_lecture_room_informations
         @managed_lecture_room_information_repository.find_all
     end
+
 
     def remove_related_informations(information)
         @lecture_room_management_information_repository.find_all.each do |stored_information|

@@ -230,6 +230,43 @@ class LectureRoomManagementInformationTest < Minitest::Test
         assert_equal [], @valid_info.conflicting_periods_with(lecture_room_management_information: other)
     end
 
+    def test_lecture_room_name_predicate_accepts_only_positive_integers
+        assert LectureRoomManagementInformation.lecture_room_name?('第1講義室')
+        assert LectureRoomManagementInformation.lecture_room_name?('第１講義室')
+        assert LectureRoomManagementInformation.lecture_room_name?('第100講義室')
+        refute LectureRoomManagementInformation.lecture_room_name?('第01講義室')
+        refute LectureRoomManagementInformation.lecture_room_name?('第0講義室')
+        refute LectureRoomManagementInformation.lecture_room_name?('第講義室')
+        refute LectureRoomManagementInformation.lecture_room_name?('第一講義室')
+        refute LectureRoomManagementInformation.lecture_room_name?('全講義室')
+    end
+
+    def test_conflicting_periods_with_full_lecture_room_name
+        lecture_room = LectureRoomManagementInformation.new(
+            date: @valid_date,
+            day_of_the_week: @valid_day_of_the_week,
+            term: @valid_term,
+            periods: [:p2, :p3],
+            room_name: '第1講義室',
+            subject: @valid_subject,
+            user: @valid_user,
+            comment: @valid_comment
+        )
+        full_lecture_room = LectureRoomManagementInformation.new(
+            date: @valid_date,
+            day_of_the_week: @valid_day_of_the_week,
+            term: @valid_term,
+            periods: [:p2, :p4],
+            room_name: '全講義室',
+            subject: @valid_subject,
+            user: @valid_user,
+            comment: @valid_comment
+        )
+
+        assert_equal [:p2], lecture_room.conflicting_periods_with(lecture_room_management_information: full_lecture_room)
+        assert_equal [:p2], full_lecture_room.conflicting_periods_with(lecture_room_management_information: lecture_room)
+    end
+
     def test_conflicting_periods_with_identical_periods
         other = LectureRoomManagementInformation.new(
             date: @valid_date,

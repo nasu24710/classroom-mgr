@@ -1,6 +1,10 @@
+require 'date'
+
 require_relative "command"
 require_relative 'lecture_room_management_information_formatter'
 require_relative 'period_master'
+require_relative 'academic_year_converter'
+require_relative 'error_handler'
 
 class PrintCommand < Command
   def initialize(
@@ -29,10 +33,33 @@ class PrintCommand < Command
       return CommandResult.new(false, false, 16)
     end
 
+    # @finding_date のフォーマットチェックと、学年暦の範囲内かどうかのチェック
+    # その上で，講義室管理情報を @finding_date でフィルタリングする．
     if @finding_date != nil
+      if @finding_date.match?(/\A\d{4}\z/) == false
+        return CommandResult.new(false, false, ErrorHandler::ERROR_INVALID_DATE_FORMAT)
+      end
+
+      # 講義室管理情報の年度を計算する．
+      academic_year =
+        AcademicYearConverter.date_to_academic_year(
+          lecture_room_management_informations.first.date
+        )
+
+      # @finding_date の月日を取得し，年を学年暦の年度に基づいて計算する．
+      month = @finding_date[0, 2].to_i
+      day = @finding_date[2, 2].to_i
+      calendar_year = month >= 4 ? academic_year : academic_year + 1
+
+      # finding_date が有効な日付かどうかをチェックする．
+      if Date.valid_date?(calendar_year, month, day) == false
+        return CommandResult.new(false, false, ErrorHandler::ERROR_INVALID_DATE_FORMAT)
+      end
+
       lecture_room_management_informations = find_by_date(lecture_room_management_informations)
     end
     
+    # 講義室管理情報を @finding_subject でフィルタリングする．
     if @finding_subject != nil
       lecture_room_management_informations = find_by_subject(lecture_room_management_informations)
     end

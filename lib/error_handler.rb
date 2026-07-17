@@ -22,15 +22,19 @@ class ErrorHandler
   ERROR_ACADEMIC_CALENDAR_LOAD_FAILED = 19
   ERROR_TIMETABLE_LOAD_FAILED = 20
   ERROR_RESERVATION_LOAD_FAILED = 21
+  ERROR_INVALID_DATE_FORMAT = 22
+  ERROR_RESERVATION_DATE_NOT_FOUND_IN_ACADEMIC_CALENDAR = 23
+  ERROR_INVALID_FILENAME_CHARACTER = 24
+  ERROR_FILENAME_TOO_LONG = 25
 
   # コマンド処理が返すエラー番号と，画面に表示するエラーメッセージを対応づける。
   NUMBER_TO_ERROR_SENTENCE = {
     ERROR_UNKNOWN_COMMAND => "エラー: 無効なコマンドです．\nマニュアルを参照し．有効なコマンドを入力してください．",
-    ERROR_ACADEMIC_CALENDAR_FILE_NOT_FOUND => "エラー：学年暦データが見つかりません．\n学年暦データを「2026/学年暦/ 」ディレクトリにアップロードしてください．",
+    ERROR_ACADEMIC_CALENDAR_FILE_NOT_FOUND => "エラー：学年暦データが見つかりません．\n学年暦データを「学年暦/ 」ディレクトリにアップロードしてください．",
     ERROR_ACADEMIC_CALENDAR_PARSE_FAILED => "エラー：学年暦データが読み込めません．\nファイル形式，または内容を確認してください．",
-    ERROR_TIMETABLE_FILE_NOT_FOUND => "エラー：時間割データが見つかりません．\n時間割データを「2026/時間割/ 」ディレクトリにアップロードしてください．",
+    ERROR_TIMETABLE_FILE_NOT_FOUND => "エラー：時間割データが見つかりません．\n時間割データを「時間割/ 」ディレクトリにアップロードしてください．",
     ERROR_TIMETABLE_PARSE_FAILED => "エラー：時間割データが読み込めません．\nファイル形式，または内容を確認してください．",
-    ERROR_RESERVATION_FILE_NOT_FOUND => "エラー：予約データが見つかりません．\n予約データを「2026/予約/ 」ディレクトリにアップロードしてください．",
+    ERROR_RESERVATION_FILE_NOT_FOUND => "エラー：予約データが見つかりません．\n予約データを「予約/ 」ディレクトリにアップロードしてください．",
     ERROR_RESERVATION_PARSE_FAILED => "エラー：予約データが読み込めません．\nファイル形式，または内容を確認してください．",
     ERROR_DIRECTORY_NOT_SPECIFIED => "エラー：ディレクトリ名が指定されていません．\nデータをアップロードしたディレクトリ名を入力してください．",
     ERROR_MANAGED_LECTURE_ROOM_FILE_NOT_FOUND => "エラー：管理対象講義室データが見つかりません．\n管理対象講義室データを「data/管理対象講義室/ 」ディレクトリにアップロードしてください．",
@@ -45,7 +49,11 @@ class ErrorHandler
     ERROR_MANAGED_LECTURE_ROOM_NOT_SELECTED => "エラー：管理対象講義室は設定されませんでした．\n管理対象講義室データを確認し，内容を更新してください．",
     ERROR_ACADEMIC_CALENDAR_LOAD_FAILED => "エラー：学年暦データの読み込みに失敗しました．",
     ERROR_TIMETABLE_LOAD_FAILED => "エラー：時間割データの読み込みに失敗しました．",
-    ERROR_RESERVATION_LOAD_FAILED => "エラー：予約データの読み込みに失敗しました．"
+    ERROR_RESERVATION_LOAD_FAILED => "エラー：予約データの読み込みに失敗しました．",
+    ERROR_INVALID_DATE_FORMAT => "エラー：日付の形式が正しくありません．\n有効な日付を入力してください．",
+    ERROR_RESERVATION_DATE_NOT_FOUND_IN_ACADEMIC_CALENDAR => "エラー：予約データの日付に対応する学年暦データが見つかりません．\n予約データと学年暦データの日付を確認してください．",
+    ERROR_INVALID_FILENAME_CHARACTER => "エラー：講義室一覧表のファイル名に不正な文字が含まれています．",
+    ERROR_FILENAME_TOO_LONG => "エラー：講義室管理一覧表のファイル名が上限文字数(256文字)を超えています．"
   }.freeze
 
   def self.print_error(error_number)

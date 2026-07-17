@@ -47,8 +47,12 @@ class ReadCommand < Command
 
     #######################################
     # 学年暦情報の取得                    
-    #######################################
-    academic_calendar_workbook = ExcelDataLoader.load_academic_calendar_xlsx_file(@directory_path)
+    #######################################    
+    begin
+      academic_calendar_workbook = ExcelDataLoader.load_academic_calendar_xlsx_file(@directory_path)
+    rescue ExcelDataLoader::InvalidExcelFileError
+      return CommandResult.new(false, false, ErrorHandler::ERROR_ACADEMIC_CALENDAR_PARSE_FAILED)
+    end
 
     if academic_calendar_workbook.nil?
       return CommandResult.new(false, false, ErrorHandler::ERROR_ACADEMIC_CALENDAR_FILE_NOT_FOUND)
@@ -61,12 +65,14 @@ class ReadCommand < Command
       return CommandResult.new(false, false, ErrorHandler::ERROR_ACADEMIC_CALENDAR_PARSE_FAILED)
     end
 
-    @academic_calendar_information_repository.replace_all(academic_calendar_informations)
-
     #######################################
     # 時間割情報の取得
     #######################################
+    begin
     timetable_workbook = ExcelDataLoader.load_timetable_xlsx_file(@directory_path)
+    rescue ExcelDataLoader::InvalidExcelFileError
+      return CommandResult.new(false, false, ErrorHandler::ERROR_TIMETABLE_PARSE_FAILED)
+    end
 
     if timetable_workbook.nil?
       return CommandResult.new(false, false, ErrorHandler::ERROR_TIMETABLE_FILE_NOT_FOUND)
@@ -79,12 +85,14 @@ class ReadCommand < Command
       return CommandResult.new(false, false, ErrorHandler::ERROR_TIMETABLE_PARSE_FAILED)
     end
 
-    @timetable_information_repository.replace_all(timetable_informations)
-
     #######################################
     # 予約情報の取得
     #######################################
-    reservation_workbook = ExcelDataLoader.load_reservation_xlsx_file(@directory_path)
+    begin
+      reservation_workbook = ExcelDataLoader.load_reservation_xlsx_file(@directory_path)
+    rescue ExcelDataLoader::InvalidExcelFileError
+      return CommandResult.new(false, false, ErrorHandler::ERROR_RESERVATION_PARSE_FAILED)
+    end
 
     if reservation_workbook.nil?
       return CommandResult.new(false, false, ErrorHandler::ERROR_RESERVATION_FILE_NOT_FOUND)
@@ -97,6 +105,11 @@ class ReadCommand < Command
       return CommandResult.new(false, false, ErrorHandler::ERROR_RESERVATION_PARSE_FAILED)
     end
 
+    ########################################
+    # repository への保存
+    ########################################
+    @academic_calendar_information_repository.replace_all(academic_calendar_informations)
+    @timetable_information_repository.replace_all(timetable_informations)
     @reservation_information_repository.replace_all(reservation_informations)
 
     ########################################

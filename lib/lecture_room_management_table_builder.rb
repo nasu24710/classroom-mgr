@@ -68,26 +68,6 @@ class LectureRoomManagementTableBuilder
       term_monthday_row_indexs[term-1] = term_monthday_row_indexs[term-1] + managed_lecture_room_informations.length + 1
       month_day_row = month_day_row + 2
 
-      # 授業曜日の変更をセルに登録する。
-      if academic_calendar_information.day_attribute.day_of_the_week_changes == :mon
-        day_of_the_week_changes_cell = worksheet.add_cell(month_day_row,0,"月曜日の授業")
-      elsif academic_calendar_information.day_attribute.day_of_the_week_changes == :tue
-        day_of_the_week_changes_cell = worksheet.add_cell(month_day_row,0,"火曜日の授業")
-      elsif academic_calendar_information.day_attribute.day_of_the_week_changes == :wed
-        day_of_the_week_changes_cell = worksheet.add_cell(month_day_row,0,"水曜日の授業")
-      elsif academic_calendar_information.day_attribute.day_of_the_week_changes == :thu
-        day_of_the_week_changes_cell = worksheet.add_cell(month_day_row,0,"木曜日の授業")
-      elsif academic_calendar_information.day_attribute.day_of_the_week_changes == :fri
-        day_of_the_week_changes_cell = worksheet.add_cell(month_day_row,0,"金曜日の授業")
-      end
-
-      if day_of_the_week_changes_cell
-        day_of_the_week_changes_cell.change_font_color("00B050") 
-        change_alignment(day_of_the_week_changes_cell)      
-        day_of_the_week_changes_cell.change_font_size(12)
-        month_day_row = month_day_row + 1
-      end
-
       # 補講日をセルに登録する。
       if academic_calendar_information.day_attribute.is_makeup_class == true
         makeup_class_cell = worksheet.add_cell(month_day_row,0,"補講日")
@@ -105,16 +85,7 @@ class LectureRoomManagementTableBuilder
         exam_period_cell.change_font_color("FF0000") 
         change_alignment(exam_period_cell) 
       end
-
-      # 休業日をセルに登録する。
-      if academic_calendar_information.day_attribute.is_public_holiday == true
-        public_holiday_cell = worksheet.add_cell(month_day_row,0,"休業日")
-        month_day_row = month_day_row + 1
-        public_holiday_cell.change_font_size(12)
-        public_holiday_cell.change_font_color("00B050") 
-        change_alignment(public_holiday_cell) 
-      end
-
+      
       # コメント（備考）の数だけセルに登録していく。
       unless academic_calendar_information.day_attribute.comments.nil?
         academic_calendar_information.day_attribute.comments.each.with_index do |comment,index|

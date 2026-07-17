@@ -1,6 +1,9 @@
 require 'rubyXL'
+require 'zip'
 
 class ExcelDataLoader
+  class InvalidExcelFileError < StandardError; end
+
   def self.load_xlsx_file(directory_path)
     xlsx_files = Dir.glob(File.join(directory_path, '*.xlsx'))
 
@@ -9,11 +12,16 @@ class ExcelDataLoader
     end
 
     xlsx_file = xlsx_files[0]
-    workbook = RubyXL::Parser.parse(xlsx_file)
+
+    begin
+      workbook = RubyXL::Parser.parse(xlsx_file)
+    rescue Zip::Error => e
+      raise InvalidExcelFileError, "#{xlsx_file} は有効なxlsxファイルではありません: #{e.message}"
+    end
 
     return workbook
   end
-    
+
   def self.load_academic_calendar_xlsx_file(directory_name)
     unless directory_name.is_a?(String)
       raise TypeError, 'directory_name must be a String.'
