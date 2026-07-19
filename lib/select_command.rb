@@ -33,7 +33,16 @@ class SelectCommand < Command
   end
 
   def execute
-    workbook = ExcelDataLoader.load_managed_lecture_room_xlsx_file
+    begin
+      workbook = ExcelDataLoader.load_managed_lecture_room_xlsx_file
+    rescue ExcelDataLoader::InvalidExcelFileError
+      return CommandResult.new(false, false, ErrorHandler::ERROR_MANAGED_LECTURE_ROOM_PARSE_FAILED)
+    rescue Errno::ENOENT
+      return CommandResult.new(false, false, ErrorHandler::ERROR_MANAGED_LECTURE_ROOM_FILE_NOT_FOUND)
+    rescue Errno::EACCES, Errno::EPERM
+      return CommandResult.new(false, false, ErrorHandler::ERROR_FILE_OPERATION_PERMISSION_DENIED)
+    end
+
     if workbook.nil?
       xlsx_files = Dir.glob(File.join("data", "管理対象講義室", "*.xlsx"))
       error_number =

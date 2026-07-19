@@ -62,3 +62,5 @@ data/*
 !data/管理対象講義室/
 data/管理対象講義室/*
 !data/管理対象講義室/.keep
+# Runtime lock files used to coordinate file operations between processes.
+*.lock

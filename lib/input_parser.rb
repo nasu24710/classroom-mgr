@@ -3,7 +3,7 @@ require_relative 'parsed_input'
 require_relative 'error_handler'
 
 class InputParser
-    # 入力を分割した後も，引用符で囲まれていたかを保持するための構造体
+    # 入力を分割した後もクォーテーションで囲まれていたかを保持するための構造体
     Token = Struct.new(:value, :quoted, keyword_init: true)
 
     # コマンド名の定義
@@ -26,7 +26,7 @@ class InputParser
         "quit" => 0
     }.freeze
 
-    # 引用符付きの「-」始まりの値をOptionParserにオプションと誤認させないための一時文字列
+    # クォーテーション付きの「-」始まりの値をOptionParserにオプションと誤認させないための一時文字列
     QUOTED_TOKEN_PREFIX = "__input_parser_quoted_token_".freeze
 
     def self.parse(input)
@@ -41,7 +41,7 @@ class InputParser
             parsed_tokens = split_with_quote_information(input)
         rescue ArgumentError
             # クォーテーションの閉じ忘れなど，入力文字列として解析できない場合
-            return ErrorHandler::ERROR_UNKNOWN_OPTION
+            return ErrorHandler::ERROR_UNKNOWN_OPTION # TODO: エラー番号を追加し，変更
         end
         command_name = parsed_tokens.shift&.value # (4) 先頭要素からコマンド名を取得
         options = {}
@@ -52,7 +52,7 @@ class InputParser
         end
 
         # OptionParserは「-subject」を「-s ubject」と解釈
-        # 引用符なしの短縮オプション風トークンだけを，事前に不正オプションとして扱う
+        # 「-」から始まる文字列の長さが2以上かつクォーテーションで囲まれていない場合はエラーとする
         if parsed_tokens.any? { |token| !token.quoted && token.value.start_with?("-") && !token.value.start_with?("--") && token.value.length > 2 }
             return ErrorHandler::ERROR_UNKNOWN_OPTION
         end
@@ -89,6 +89,15 @@ class InputParser
         # 引数の個数を確認し，不足または超過している場合はエラー番号を返却
         arguments = tokens
         unless arguments.length == COMMAND_ARGUMENT_COUNTS[command_name]
+            return ErrorHandler::ERROR_UNKNOWN_COMMAND # TODO: エラー番号を追加し，変更
+        end
+
+        # トークンの分類と個数確認後，値付きオプションと位置引数の実値を検証
+        # 半角スペースだけの値は許容し，空文字やタブ・改行だけの値は無効とする
+        if options.values.any? { |value| blank_value?(value) }
+            return ErrorHandler::ERROR_UNKNOWN_OPTION
+        end
+        if arguments.any? { |argument| blank_value?(argument) }
             return ErrorHandler::ERROR_UNKNOWN_COMMAND
         end
 
@@ -106,19 +115,19 @@ class InputParser
 
         input.each_char do |char|
             if current_quote
-                # 引用符内では空白も通常文字として扱い，同じ引用符が来たら引用を終了
+                # クォーテーション内では空白も通常文字として扱い，同じクォーテーションが来たらクォーテーションを終了
                 if char == current_quote
                     current_quote = nil
                 else
                     current_token << char
                 end
             elsif char == '"' || char == "'"
-                # 引用符の開始。read "" のような空文字列もトークンとして扱う
+                # クォーテーションの開始。read "" のような空文字列もトークンとして扱う
                 current_quote = char
                 token_started = true
                 token_quoted = true
             elsif char.match?(/\s/)
-                # 引用符の外側の空白はトークン区切りとして扱う
+                # クォーテーションの外側の空白はトークン区切りとして扱う
                 if token_started
                     tokens << Token.new(value: current_token, quoted: token_quoted)
                     current_token = +""
@@ -131,14 +140,14 @@ class InputParser
             end
         end
 
-        # 引用符が閉じていない場合は，呼び出し元で入力解析エラーに変換
-        raise ArgumentError, "unclosed quote" unless current_quote.nil?
+        # クォーテーションが閉じていない場合は，エラーとしてArgumentErrorを発生させる
+        raise ArgumentError, "Unclosed quote in input" if current_quote
 
         tokens << Token.new(value: current_token, quoted: token_quoted) if token_started
         tokens
     end
 
-    # OptionParserに渡す前に置き換えた一時文字列を，元の引用符付きトークン値に戻す
+    # OptionParserに渡す前に置き換えた一時文字列を，元のクォーテーション付きトークン値に戻す
     def self.restore_quoted_token_values!(target, quoted_token_values)
         case target
         when Array
@@ -150,20 +159,30 @@ class InputParser
         end
     end
 
+    # nil，空文字，またはタブや改行などだけで構成された値かを判定
+    def self.blank_value?(value)
+        return true if value.nil? || value.empty?
+
+        value.match?(/\A[ \t\r\n\v\f]*[\t\r\n\v\f][ \t\r\n\v\f]*\z/)
+    end
+
     # オプション引数を登録するメソッド
     def self.register_options(option_parser, command_name, options)
         case command_name
         when "create"
             option_parser.on("-t TERM", "--term TERM") do |term|
-            options[:term] = term
+                raise OptionParser::InvalidOption if options.key?(:term)
+                options[:term] = term
             end
         when "print"
             option_parser.on("-d DATE", "--date DATE") do |date|
-            options[:date] = date
+                raise OptionParser::InvalidOption if options.key?(:date)
+                options[:date] = date
             end
 
             option_parser.on("-s SUBJECT", "--subject SUBJECT") do |subject|
-            options[:subject] = subject
+                raise OptionParser::InvalidOption if options.key?(:subject)
+                options[:subject] = subject
             end
         end
     end
@@ -171,5 +190,6 @@ class InputParser
     private_constant :Token
     private_class_method :split_with_quote_information
     private_class_method :restore_quoted_token_values!
+    private_class_method :blank_value?
     private_class_method :register_options
 end

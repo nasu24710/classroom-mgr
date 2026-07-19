@@ -43,6 +43,22 @@ class WriteCommand
     end
 
     def execute
+      # 出力処理やデータ検証より先に，利用者が指定したファイル名を検証する。
+      if @file_name.empty? || @file_name.strip.empty?
+        return CommandResult.new(false, false, ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED)
+      end
+
+      if @file_name.length > 256
+        return CommandResult.new(false, false, ErrorHandler::ERROR_FILENAME_TOO_LONG)
+      end
+
+      # ディレクトリ指定やパス区切りを含む値はファイル名として拒否する。
+      begin
+        ApplicationPath.validate_output_file_name!(@file_name)
+      rescue ApplicationPath::InvalidPathError
+        return CommandResult.new(false, false, ErrorHandler::ERROR_INVALID_FILENAME_CHARACTER)
+      end
+
       academic_calendar_information_list = @academic_calendar_information_repository.find_all
       
       if academic_calendar_information_list.size == 0
@@ -50,18 +66,6 @@ class WriteCommand
       end
 
       file_name = @file_name
-
-      if file_name.empty?
-        return CommandResult.new(false,false,ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED)
-      end
-
-      if file_name.match?(/[.\\\/:*?"<>|]/)
-        return CommandResult.new(false,false,ErrorHandler::ERROR_INVALID_FILENAME_CHARACTER)
-      end
-      
-      if file_name.length > 256
-        return CommandResult.new(false,false,ErrorHandler::ERROR_FILENAME_TOO_LONG)
-      end
 
       managed_lecture_room_information_list = @managed_lecture_room_information_repository.find_all
 
@@ -82,10 +86,18 @@ class WriteCommand
 
       lecture_room_management_workbook = table_populator.populate_entries(lecture_room_management_information_list)
 
-      @excel_data_exporter.export(lecture_room_management_workbook,file_name)
+      # 出力時にoutputや出力ファイルがリンクへ置換されていた場合もエラーにする。
+      begin
+        @excel_data_exporter.export(lecture_room_management_workbook,file_name)
+      rescue ApplicationPath::InvalidPathError
+        return CommandResult.new(false, false, ErrorHandler::ERROR_PATH_OUTSIDE_ALLOWED_DIRECTORY)
+      rescue Errno::EACCES, Errno::EPERM, Errno::EROFS
+        return CommandResult.new(false, false, ErrorHandler::ERROR_FILE_OPERATION_PERMISSION_DENIED)
+      end
 
       puts "講義室管理一覧表の作成が完了しました．"
-      puts "出力先： output/#{@file_name}.xlsx"
+      output_name = @file_name.end_with?('.xlsx') ? @file_name : "#{@file_name}.xlsx"
+      puts "出力先： output/#{output_name}"
       return CommandResult.new(false,true,0)
     end
   

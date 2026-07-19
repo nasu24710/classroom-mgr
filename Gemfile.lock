@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    fiddle (1.1.8)
     minitest (6.0.0)
       prism (~> 1.5)
     nokogiri (1.19.4-arm64-darwin)
@@ -38,6 +39,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  fiddle
   minitest
   rubyXL
   tty-prompt

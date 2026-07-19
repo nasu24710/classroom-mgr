@@ -83,7 +83,7 @@ class CommandFactory
     begin
       term = Integer(term) unless term.nil?
     rescue ArgumentError, TypeError
-      term = nil
+      term = -1
     end
     finding_date = options[:finding_date] || options["finding_date"] || options[:date] || options["date"]
     finding_subject = options[:finding_subject] || options["finding_subject"] || options[:subject] || options["subject"]
