@@ -45,8 +45,8 @@ class ExcelDataLoader
   end
   private_class_method :with_exclusive_lock
 
-  def self.load_academic_calendar_xlsx_file(directory_name)
-    unless directory_name.is_a?(String)
+  def self.load_academic_calendar_xlsx_file(directory_path)
+    unless directory_path.is_a?(String)
       raise TypeError, 'directory_name must be a String.'
     end
 

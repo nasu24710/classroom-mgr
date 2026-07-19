@@ -38,7 +38,7 @@ class ErrorHandler
 
   # コマンド処理が返すエラー番号と，画面に表示するエラーメッセージを対応づける。
   NUMBER_TO_ERROR_SENTENCE = {
-    ERROR_UNKNOWN_COMMAND => "エラー: 無効なコマンドです．\nマニュアルを参照し．有効なコマンドを入力してください．",
+    ERROR_UNKNOWN_COMMAND => "エラー: 無効なコマンドです．\nマニュアルを参照し，有効なコマンドを入力してください．",
     ERROR_ACADEMIC_CALENDAR_FILE_NOT_FOUND => "エラー：学年暦データが見つかりません．\n学年暦データを「学年暦/ 」ディレクトリにアップロードしてください．",
     ERROR_ACADEMIC_CALENDAR_PARSE_FAILED => "エラー：学年暦データが読み込めません．\nファイル形式，または内容を確認してください．",
     ERROR_TIMETABLE_FILE_NOT_FOUND => "エラー：時間割データが見つかりません．\n時間割データを「時間割/ 」ディレクトリにアップロードしてください．",
@@ -62,17 +62,16 @@ class ErrorHandler
     ERROR_INVALID_DATE_FORMAT => "エラー：日付の形式が正しくありません．\n有効な日付を入力してください．",
     ERROR_RESERVATION_DATE_NOT_FOUND_IN_ACADEMIC_CALENDAR => "エラー：予約データの日付に対応する学年暦データが見つかりません．\n予約データと学年暦データの日付を確認してください．",
     ERROR_INVALID_FILENAME_CHARACTER => "エラー：講義室一覧表のファイル名に不正な文字が含まれています．",
-    ERROR_FILENAME_TOO_LONG => "エラー：講義室管理一覧表のファイル名が上限文字数(256文字)を超えています．"
-    ERROR_INVALID_ARGUMENT_MESSAGE => "エラー：無効な引数です．\nマニュアルを参照し．有効な引数を入力してください．"
-    ERROR_MULTIPLE_ACADEMIC_CALENDAR_FILES_MESSAGE => "エラー：学年暦データが2つ以上あります．\n「2026/学年暦/ 」ディレクトリには，学年暦データを1つだけ配置してください．"
-    ERROR_MULTIPLE_RESERVATION_FILES_MESSAGE => "エラー：予約データが2つ以上あります．\n「2026/予約/ 」ディレクトリには，予約データを1つだけ配置してください．"
-    ERROR_MULTIPLE_TIMETABLE_FILES_MESSAGE => "エラー：時間割データが2つ以上あります．\n「2026/時間割/ 」ディレクトリには，時間割データを1つだけ配置してください．"
-    ERROR_MULTIPLE_MANAGED_LECTURE_ROOM_FILES_MESSAGE =>"エラー：管理対象講義室データが2つ以上あります．\n「data/管理対象講義室/ 」ディレクトリには，管理対象講義室データを1つだけ配置してください．"
-    ERROR_OUTPUT_FILE_NOT_SPECIFIED_MESSAGE => "エラー：講義室管理一覧表のファイル名を指定してください．"
     ERROR_FILENAME_TOO_LONG => "エラー：講義室管理一覧表のファイル名が上限文字数(256文字)を超えています．",
+    ERROR_INVALID_ARGUMENT_MESSAGE => "エラー：無効な引数です．\nマニュアルを参照し，有効な引数を入力してください．",
+    ERROR_MULTIPLE_ACADEMIC_CALENDAR_FILES_MESSAGE => "エラー：学年暦データが2つ以上あります．\n「2026/学年暦/ 」ディレクトリには，学年暦データを1つだけ配置してください．",
+    ERROR_MULTIPLE_RESERVATION_FILES_MESSAGE => "エラー：予約データが2つ以上あります．\n「2026/予約/ 」ディレクトリには，予約データを1つだけ配置してください．",
+    ERROR_MULTIPLE_TIMETABLE_FILES_MESSAGE => "エラー：時間割データが2つ以上あります．\n「2026/時間割/ 」ディレクトリには，時間割データを1つだけ配置してください．",
+    ERROR_MULTIPLE_MANAGED_LECTURE_ROOM_FILES_MESSAGE =>"エラー：管理対象講義室データが2つ以上あります．\n「data/管理対象講義室/ 」ディレクトリには，管理対象講義室データを1つだけ配置してください．",
+    ERROR_OUTPUT_FILE_NOT_SPECIFIED_MESSAGE => "エラー：講義室管理一覧表のファイル名を指定してください．",
     ERROR_FILE_OPERATION_PERMISSION_DENIED => "エラー：ファイルを操作する権限がありません．\nデータおよび出力先ディレクトリの権限を確認してください．",
     ERROR_PATH_OUTSIDE_ALLOWED_DIRECTORY => "エラー：指定されたパスは，許可されたディレクトリの範囲外です．",
-    ERROR_MULTIPLE_EXCEL_FILES => "エラー：対象ディレクトリに複数のファイルが存在します．\nファイルを1つだけ配置してください．"
+    ERROR_MULTIPLE_EXCEL_FILES => "エラー：対象ディレクトリに複数のファイルが存在します．\nファイルを1つだけ配置してください．",
   }.freeze
 
   def self.print_error(error_number)
