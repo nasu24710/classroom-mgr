@@ -67,6 +67,18 @@ class WriteCommand
 
       file_name = @file_name
 
+      if file_name.empty?
+        return CommandResult.new(false,false,ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED)
+      end
+
+      if file_name.match?(/[\\\/:*?"<>|]/) || file_name.start_with?(".", "．")
+        return CommandResult.new(false,false,ErrorHandler::ERROR_INVALID_FILENAME_CHARACTER)
+      end
+      
+      if file_name.length > 256
+        return CommandResult.new(false,false,ErrorHandler::ERROR_FILENAME_TOO_LONG)
+      end
+
       managed_lecture_room_information_list = @managed_lecture_room_information_repository.find_all
 
       lecture_room_management_information_list = select_managed_lecture_room_management_informations(
