@@ -10,6 +10,7 @@ require_relative 'academic_calendar_parser'
 require_relative 'timetable_parser'
 require_relative 'reservation_parser'
 require_relative 'error_handler'
+require_relative 'excel_parse_error'
 
 class ReadCommand < Command
   def initialize(
@@ -76,7 +77,13 @@ class ReadCommand < Command
     end
 
     academic_calendar_parser = AcademicCalendarParser.new(academic_calendar_workbook[0], academic_calendar_workbook.stylesheet)
-    academic_calendar_informations = academic_calendar_parser.parse_academic_calendar_worksheet
+
+    begin
+      academic_calendar_informations = academic_calendar_parser.parse_academic_calendar_worksheet
+    rescue ExcelParseError => e
+      warn e.message
+      return CommandResult.new(false, false, ErrorHandler::ERROR_ACADEMIC_CALENDAR_PARSE_FAILED)
+    end
 
     if academic_calendar_informations.empty?
       return CommandResult.new(false, false, ErrorHandler::ERROR_ACADEMIC_CALENDAR_PARSE_FAILED)
