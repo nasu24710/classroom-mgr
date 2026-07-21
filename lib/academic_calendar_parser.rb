@@ -299,6 +299,14 @@ class AcademicCalendarParser
 
     return nil if day.nil?
 
+    # 日付が小数などの不正な値でないか事前にチェック
+    unless day.is_a?(Integer) || (day.is_a?(Float) && (day % 1).zero?)
+      raise ExcelParseError.new(
+        "Day must be an integer, but got '#{day}'.",
+        sheet: @worksheet.sheet_name, row: target_row, col: target_column
+      )
+    end
+
     # 存在しない日付が含まれる（32日，2月30日など）
     begin
       date = Date.new(calendar_year, month, day.to_i)
