@@ -89,6 +89,12 @@ class InputParser
         # 引数の個数を確認し，不足または超過している場合はエラー番号を返却
         arguments = tokens
         unless arguments.length == COMMAND_ARGUMENT_COUNTS[command_name]
+            if command_name == "read"
+                return ErrorHandler::ERROR_DIRECTORY_NOT_SPECIFIED
+            end
+            if command_name == "write"
+                return ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED
+            end
             return ErrorHandler::ERROR_UNKNOWN_COMMAND # TODO: エラー番号を追加し，変更
         end
 
@@ -97,7 +103,14 @@ class InputParser
         if options.values.any? { |value| blank_value?(value) }
             return ErrorHandler::ERROR_UNKNOWN_OPTION
         end
+
         if arguments.any? { |argument| blank_value?(argument) }
+            if command_name == "read"
+                return ErrorHandler::ERROR_DIRECTORY_NOT_SPECIFIED
+            end
+            if command_name == "write"
+                return ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED
+            end
             return ErrorHandler::ERROR_UNKNOWN_COMMAND
         end
 
