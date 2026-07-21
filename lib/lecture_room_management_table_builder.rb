@@ -65,7 +65,15 @@ class LectureRoomManagementTableBuilder
       month_day_cell = worksheet.add_cell(month_day_row,0,"#{month_day_string}")
       month_day_cell.change_font_size(12)
       change_alignment(month_day_cell)  
-      term_monthday_row_indexs[term-1] = term_monthday_row_indexs[term-1] + managed_lecture_room_informations.length + 1
+
+      if managed_lecture_room_informations.size == 1
+        term_monthday_row_indexs[term-1] = term_monthday_row_indexs[term-1] + managed_lecture_room_informations.length + 3
+      elsif managed_lecture_room_informations.size == 2
+        term_monthday_row_indexs[term-1] = term_monthday_row_indexs[term-1] + managed_lecture_room_informations.length + 2
+      else 
+        term_monthday_row_indexs[term-1] = term_monthday_row_indexs[term-1] + managed_lecture_room_informations.length + 1
+      end
+
       month_day_row = month_day_row + 2
 
       # 補講日をセルに登録する。
@@ -161,9 +169,16 @@ class LectureRoomManagementTableBuilder
         managed_lecture_room_row = managed_lecture_room_row + 1
       end
 
-      term_day_of_week_row_indexs[term-1] = term_day_of_week_row_indexs[term-1] + managed_lecture_room_informations.length + 1
-
-      term_managed_lecture_room_information_row_indexs[term-1] = term_managed_lecture_room_information_row_indexs[term-1] + managed_lecture_room_informations.length + 1      
+      if managed_lecture_room_informations.size == 1
+        term_day_of_week_row_indexs[term-1] = term_day_of_week_row_indexs[term-1] + managed_lecture_room_informations.length + 3
+        term_managed_lecture_room_information_row_indexs[term-1] = term_managed_lecture_room_information_row_indexs[term-1] + managed_lecture_room_informations.length + 3
+      elsif managed_lecture_room_informations.size == 2      
+        term_day_of_week_row_indexs[term-1] = term_day_of_week_row_indexs[term-1] + managed_lecture_room_informations.length + 2
+        term_managed_lecture_room_information_row_indexs[term-1] = term_managed_lecture_room_information_row_indexs[term-1] + managed_lecture_room_informations.length + 2
+      else
+        term_day_of_week_row_indexs[term-1] = term_day_of_week_row_indexs[term-1] + managed_lecture_room_informations.length + 1
+        term_managed_lecture_room_information_row_indexs[term-1] = term_managed_lecture_room_information_row_indexs[term-1] + managed_lecture_room_informations.length + 1   
+      end     
     end
 
     return LectureRoomManagementTableBuildingResult.new(workbook,row_map,column_map)
