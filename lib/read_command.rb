@@ -61,7 +61,7 @@ class ReadCommand < Command
     begin
       academic_calendar_workbook = ExcelDataLoader.load_academic_calendar_xlsx_file(directory_path)
     rescue ExcelDataLoader::MultipleExcelFilesError
-      return CommandResult.new(false, false, ErrorHandler::ERROR_MULTIPLE_EXCEL_FILES)
+      return CommandResult.new(false, false, ErrorHandler::ERROR_MULTIPLE_ACADEMIC_CALENDAR_FILES_MESSAGE)
     rescue ExcelDataLoader::InvalidExcelFileError
       return CommandResult.new(false, false, ErrorHandler::ERROR_ACADEMIC_CALENDAR_PARSE_FAILED)
     rescue Errno::ENOENT
@@ -95,7 +95,7 @@ class ReadCommand < Command
     begin
       timetable_workbook = ExcelDataLoader.load_timetable_xlsx_file(directory_path)
     rescue ExcelDataLoader::MultipleExcelFilesError
-      return CommandResult.new(false, false, ErrorHandler::ERROR_MULTIPLE_EXCEL_FILES)
+      return CommandResult.new(false, false, ErrorHandler::ERROR_MULTIPLE_TIMETABLE_FILES_MESSAGE)
     rescue ExcelDataLoader::InvalidExcelFileError
       return CommandResult.new(false, false, ErrorHandler::ERROR_TIMETABLE_PARSE_FAILED)
     rescue Errno::ENOENT
@@ -129,7 +129,7 @@ class ReadCommand < Command
     begin
       reservation_workbook = ExcelDataLoader.load_reservation_xlsx_file(directory_path)
     rescue ExcelDataLoader::MultipleExcelFilesError
-      return CommandResult.new(false, false, ErrorHandler::ERROR_MULTIPLE_EXCEL_FILES)
+      return CommandResult.new(false, false, ErrorHandler::ERROR_MULTIPLE_RESERVATION_FILES_MESSAGE)
     rescue ExcelDataLoader::InvalidExcelFileError
       return CommandResult.new(false, false, ErrorHandler::ERROR_RESERVATION_PARSE_FAILED)
     rescue Errno::ENOENT

@@ -89,13 +89,16 @@ class InputParser
         # 引数の個数を確認し，不足または超過している場合はエラー番号を返却
         arguments = tokens
         unless arguments.length == COMMAND_ARGUMENT_COUNTS[command_name]
-            if command_name == "read"
-                return ErrorHandler::ERROR_DIRECTORY_NOT_SPECIFIED
+            if arguments.length == 0
+                if command_name == "read"
+                    return ErrorHandler::ERROR_DIRECTORY_NOT_SPECIFIED
+                end
+                if command_name == "write"
+                    return ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED
+                end
+            else
+                return ErrorHandler::ERROR_INVALID_ARGUMENT_MESSAGE
             end
-            if command_name == "write"
-                return ErrorHandler::ERROR_OUTPUT_FILE_NOT_SPECIFIED
-            end
-            return ErrorHandler::ERROR_UNKNOWN_COMMAND # TODO: エラー番号を追加し，変更
         end
 
         # トークンの分類と個数確認後，値付きオプションと位置引数の実値を検証
