@@ -1,6 +1,7 @@
 require 'rubyXL'
 require_relative 'academic_calendar_comment_date_parser'
 require_relative 'academic_calendar_comment'
+require_relative 'excel_parse_error'
 
 class AcademicCalendarCommentParser
   DAY_OF_THE_WEEK_SYMBOLS = {
@@ -111,20 +112,32 @@ class AcademicCalendarCommentParser
     comment = {}
 
     comment_cell = @worksheet[start_row][start_column]
-    comment_text = comment_cell.value.to_s.strip
+    comment_text = comment_cell&.value.to_s.strip
 
-    if comment_text.empty?
+    description_cell = @worksheet[start_row][start_column + 1]
+    description_text = description_cell&.value.to_s.strip
+
+    # 日付と説明の両方が空の場合はスキップ
+    if comment_text.empty? && description_text.empty?
+      return nil
+    end
+
+    # 日付がないのに説明だけある場合は例外を発生させる
+    if comment_text.empty? && !description_text.empty?
+      raise ExcelParseError.new(
+        "Date is missing for the comment, but description is present.",
+        sheet: @worksheet.sheet_name,
+        row: start_row,
+        col: start_column
+      )
+    end
+
+    # 日付はあるが説明が空の場合はスキップ
+    if description_text.empty?
       return nil
     end
 
     dates = AcademicCalendarCommentDateParser.parse(comment_text, academic_year, month)
-
-    description_cell = @worksheet[start_row][start_column + 1]
-    description_text = description_cell.value.to_s.strip
-
-    if description_text.empty?
-      return nil
-    end
 
     day_of_the_week_change, is_holiday, is_university_festival = classify_type(description_text)
     description_text = description_text.gsub(/([月火水木金土日])曜日の授業(?:\([^)]*\))?(?:を行う)?/, '\1曜日授業')

@@ -4,6 +4,7 @@ require_relative 'academic_calendar_comment_parser'
 require_relative 'academic_year_converter'
 require_relative 'academic_calendar_information'
 require_relative 'day_attribute'
+require_relative 'excel_parse_error'
 
 class AcademicCalendarParser
   def initialize(worksheet, stylesheet)
@@ -20,11 +21,15 @@ class AcademicCalendarParser
   end
 
   def parse_academic_calendar_worksheet
-    title = get_data_title(1, 1)
+    title_cell = [1, 1]
+    title = get_data_title(title_cell[0], title_cell[1])
     academic_year = parse_title(title)
 
     if academic_year.nil?
-      return []
+      raise ExcelParseError.new(
+        "Invalid academic year format in the title cell. Expected a 4-digit year.",
+        sheet: @worksheet.sheet_name, row: title_cell[0], col: title_cell[1]
+      )
     end
 
     academic_calendar_comment_parser = AcademicCalendarCommentParser.new(@worksheet)
@@ -46,6 +51,44 @@ class AcademicCalendarParser
 
       academic_calendar_informations.concat(month_informations)
     end
+
+    #############################################
+    # 異常系チェック: 日付の網羅性と重複の確認
+    #############################################
+    parsed_dates = academic_calendar_informations.map(&:date)
+
+    # 同じ日付が複数ある（重複チェック）
+    duplicates = parsed_dates.tally.select { |_, count| count > 1 }.keys
+    unless duplicates.empty?
+      raise ExcelParseError.new(
+        "Duplicate dates found in the calendar: #{duplicates.map(&:to_s).join(', ')}",
+        sheet: @worksheet.sheet_name
+      )
+    end
+
+    # 想定される日付がない（欠損チェック）
+    expected_start = Date.new(academic_year, 4, 1)
+    expected_end = Date.new(academic_year + 1, 3, 31)
+    expected_dates = (expected_start..expected_end).to_a
+
+    if parsed_dates.size != expected_dates.size
+      missing_dates = expected_dates - parsed_dates
+      if missing_dates.any?
+        # 長すぎると見づらいので、最初の3日だけ例として表示
+        example_missing = missing_dates.first(3).map(&:to_s).join(', ')
+        raise ExcelParseError.new(
+          "Missing expected dates. Expected: #{expected_dates.size}, Got: #{parsed_dates.size}. Missing examples: #{example_missing}...",
+          sheet: @worksheet.sheet_name
+        )
+      else
+        raise ExcelParseError.new(
+          "Unexpected number of dates parsed. Expected: #{expected_dates.size}, Got: #{parsed_dates.size}.",
+          sheet: @worksheet.sheet_name
+        )
+      end
+    end
+
+
     return academic_calendar_informations
   end
 
@@ -120,6 +163,9 @@ class AcademicCalendarParser
         raise TypeError, 'cell_color_definitions must be a Hash.'
       end
 
+      # 月と曜日のヘッダーが正しいかチェック
+      validate_calendar_framework!(month, start_row, start_column)
+
       month_informations = []
 
       (0...6).each do |row_offset|
@@ -133,6 +179,44 @@ class AcademicCalendarParser
       return month_informations
   end
 
+  def validate_calendar_framework!(month, start_row, start_column)
+    # 曜日の順番が正しいか
+    # 曜日は各ブロックの一番上（5行目＝インデックス4）に固定で記載されている
+    header_row = 4 
+    expected_days = ['日', '月', '火', '水', '木', '金', '土']
+    
+    expected_days.each_with_index do |expected_day, col_offset|
+      target_column = start_column + col_offset
+      cell = @worksheet[header_row][target_column]
+      actual_day = cell&.value.to_s.strip
+      
+      unless actual_day.include?(expected_day)
+        raise ExcelParseError.new(
+          "Invalid day of the week order. Expected '#{expected_day}', but got '#{actual_day}'.",
+          sheet: @worksheet.sheet_name, row: header_row, col: target_column
+        )
+      end
+    end
+
+    # 月の順番が正しいか
+    # 月の数字は、各月ブロックの開始行から2つ下の行，開始列から2つ左の列に記載されている
+    # (例: 4月の場合，開始がD7(行6,列3)なら，ラベルはB9(行8,列1))
+    month_label_row = start_row + 2
+    month_label_col = start_column - 2
+    
+    month_label_cell = @worksheet[month_label_row][month_label_col]
+    actual_month_label = month_label_cell&.value.to_s.strip
+    
+    # "4" のような数字のみの場合と、"4月" のような文字が含まれる場合の両方を許容
+    unless actual_month_label == month.to_s || actual_month_label.include?("#{month}月")
+      raise ExcelParseError.new(
+        "Invalid month block. Expected month '#{month}', but found label '#{actual_month_label}'.",
+        sheet: @worksheet.sheet_name, row: month_label_row, col: month_label_col
+      )
+    end
+  end
+  private :validate_calendar_framework!
+  
   def parse_week_grid(calendar_year, month, start_row, start_column, term_periods, comments, cell_color_definitions)
     unless calendar_year.is_a?(Integer)
       raise TypeError, 'calendar_year must be an Integer.'
@@ -215,10 +299,26 @@ class AcademicCalendarParser
 
     return nil if day.nil?
 
+    # 日付が小数などの不正な値でないか事前にチェック
+    unless day.is_a?(Integer) || (day.is_a?(Float) && (day % 1).zero?)
+      raise ExcelParseError.new(
+        "Day must be an integer, but got '#{day}'.",
+        sheet: @worksheet.sheet_name, row: target_row, col: target_column
+      )
+    end
+
+    # 存在しない日付が含まれる（32日，2月30日など）
+    begin
+      date = Date.new(calendar_year, month, day.to_i)
+    rescue Date::Error, ArgumentError, TypeError
+      raise ExcelParseError.new(
+        "Invalid day value '#{day}' for month #{month}.",
+        sheet: @worksheet.sheet_name, row: target_row, col: target_column
+      )
+    end
+
     background_color = fetch_background_color(cell)
     border_color = fetch_border_color(cell)
-
-    date = Date.new(calendar_year, month, day)
 
     day_attribute = parse_day_attribute(background_color, border_color, date, comments, cell_color_definitions)
 
@@ -277,6 +377,31 @@ class AcademicCalendarParser
     is_day_of_the_week_change_border = !border_colors.nil? && border_colors == definition_border_colors.call(:day_of_the_week_change)
     is_makeup_class_border = !border_colors.nil? && border_colors == definition_border_colors.call(:makeup_class)
 
+    date_comments = comments[date]
+
+    # ==========================================
+    # 曜日変更の枠線と備考テキストの整合性チェック
+    # ==========================================
+    has_day_change_comment = false
+    if date_comments
+      has_day_change_comment = date_comments.any? { |c| !c.day_of_the_week_changes.nil? }
+    end
+
+    # 枠線があるのに，備考に記述がない
+    if is_day_of_the_week_change_border && !has_day_change_comment
+      raise ExcelParseError.new(
+        "A day of the week change border is set for #{date}, but no corresponding description is found in the comments.",
+        sheet: @worksheet.sheet_name
+      )
+    end
+
+    # 備考に変更の記述があるのに，カレンダーに枠線がない
+    if has_day_change_comment && !is_day_of_the_week_change_border
+      raise ExcelParseError.new(
+        "A day of the week change description exists in the comments for #{date}, but the corresponding border is not set on the calendar.",        sheet: @worksheet.sheet_name
+      )
+    end
+
     day_of_the_week_change = nil
     is_makeup_class = false
     is_exam_period = false
@@ -285,8 +410,6 @@ class AcademicCalendarParser
     comment_descriptions = nil
 
     is_holiday = background_color == cell_color_definitions[:holiday][:background_color]
-
-    date_comments = comments[date]
 
     unless date_comments.nil?
       if is_day_of_the_week_change_border
@@ -324,11 +447,25 @@ class AcademicCalendarParser
 
     term_start_row = 46 # 47行目に1学期の期間が記載
     term_column = 4 # E列目に各学期の期間が記載
+    previous_end_date = nil
 
     (1..4).each do |term|
       row = term_start_row + (term - 1) * 2 # 各学期の期間は2行おきに記載されている
       dates = parse_term_period(row, term_column, academic_year)
-      term_periods[term] = (dates[0]..dates[1])
+
+      start_date = dates[0]
+      end_date = dates[1]
+
+      # 各学期の期間が重複する，または前の学期より前に開始する
+      if previous_end_date && start_date <= previous_end_date
+        raise ExcelParseError.new(
+          "Term #{term} overlaps with the previous term or is out of order.",
+          sheet: @worksheet.sheet_name, row: row, col: term_column
+        )
+      end
+
+      term_periods[term] = (start_date..end_date)
+      previous_end_date = end_date
     end
 
     return term_periods
@@ -348,10 +485,17 @@ class AcademicCalendarParser
     end
 
     cell = @worksheet[target_row][target_column]
-    cell_text = cell.value.to_s.strip
+    cell_text = cell&.value.to_s.strip
     
-    match = cell_text.match(/(\d+)月(\d+)日[〜～~](\d+)月(\d+)日/)
-    return nil if match.nil?
+    match = cell_text.match(/(\d+)\s*月\s*(\d+)\s*日\s*[〜～~]\s*(\d+)\s*月\s*(\d+)\s*日/)
+
+    # 不正な値が入る（フォーマットが違う，値が足りないなど）
+    if match.nil?
+      raise ExcelParseError.new(
+        "Invalid term period format. Expected format like '4月1日〜6月8日'.",
+        sheet: @worksheet.sheet_name, row: target_row, col: target_column
+      )
+    end
 
     start_month = match[1].to_i
     start_day = match[2].to_i
@@ -361,8 +505,25 @@ class AcademicCalendarParser
     start_year = AcademicYearConverter.academic_year_and_month_to_calendar_year(academic_year, start_month)
     end_year = AcademicYearConverter.academic_year_and_month_to_calendar_year(academic_year, end_month)
 
-    start_date = Date.new(start_year, start_month, start_day)
-    end_date = Date.new(end_year, end_month, end_day)
+
+    begin
+      start_date = Date.new(start_year, start_month, start_day)
+      end_date = Date.new(end_year, end_month, end_day)
+    rescue Date::Error, ArgumentError
+      # 日付が不正
+      raise ExcelParseError.new(
+        "Invalid date found in term period (e.g., non-existent day).",
+        sheet: @worksheet.sheet_name, row: target_row, col: target_column
+      )
+    end
+
+    # 順番が逆（開始日より終了日が前になっている）
+    if start_date > end_date
+      raise ExcelParseError.new(
+        "Term end date cannot be before the start date.",
+        sheet: @worksheet.sheet_name, row: target_row, col: target_column
+      )
+    end
 
     return [start_date, end_date]
   end
